@@ -16,11 +16,15 @@
 ;; along with json.  If not, see <https://www.gnu.org/licenses/>.
 
 (ns collector-core.constructors
-  (:require [clojure.test :refer :all]))
+  (:require [clojure.test :refer [is]]
+            [clojure.spec.alpha :as s]
+            [collector-core.auxiliary-functions :refer [now]]))
 
-(defn create-empty-state
+(defn create-initial-database
   "Creates an empty state for the entire application"
   {:test (fn []
-           (is (= (create-empty-state) nil)))}
-  []
-  nil)
+           (is (s/valid? :collector-core.specs/initial-database (create-initial-database (now)))))}
+  [date]
+  {:pre  [s/valid? :collector-core.specs/date date]
+   :post [s/valid? :collector-core.specs/initial-database %]}
+  {:date-created date})
