@@ -1,3 +1,5 @@
+[![Clojure CI](https://github.com/pgegh/collector-core/actions/workflows/clojure.yml/badge.svg)](https://github.com/pgegh/collector-core/actions/workflows/clojure.yml)
+
 # collector-core
 
 A Clojure application used for storing information of digital media.
