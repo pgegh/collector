@@ -28,3 +28,25 @@
   {:pre  [s/valid? :collector-core.specs/date date]
    :post [s/valid? :collector-core.specs/initial-database %]}
   {:date-created date})
+
+(defn create-movie
+  "Creates a movie element"
+  {:test (fn []
+           (is (= (create-movie "tt0110413")
+                  {:imdb-movie-id "tt0110413"}))
+           (is (= (create-movie "tt0110413"
+                                :title "Léon: The Professional"
+                                :year 1994)
+                  {:imdb-movie-id "tt0110413"
+                   :title         "Léon: The Professional"
+                   :year          1994}))
+           (is (not (s/valid? (create-movie "tt239423" :invalid-property 723423)
+                              {:imdb-movie-id    "tt239423"
+                               :invalid-property 723423}))))}
+  [imdb-movie-id & kvs]
+  {:pre  [string? imdb-movie-id]
+   :post [s/valid? :collector-core.specs/movie]}
+  (let [movie {:imdb-movie-id imdb-movie-id}]
+    (if (empty? kvs)
+      movie
+      (apply assoc movie kvs))))
