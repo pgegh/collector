@@ -46,3 +46,16 @@
   (.parse
     (SimpleDateFormat. pattern)
     date-string))
+
+(defn error
+  "Throws an exception with a message"
+  {:test (fn []
+           (is (= (try
+                    (error "Error test!")
+                    (catch Exception e
+                      (ex-message e)))
+                  "Error test!")))}
+  [error-message]
+  {:pre  [(string? error-message)]
+   :post [(instance? Exception %)]}
+  (throw (new Exception error-message)))
