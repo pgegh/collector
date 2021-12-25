@@ -16,9 +16,11 @@
 ;; along with json.  If not, see <https://www.gnu.org/licenses/>.
 
 (ns collector-core.auxiliary-functions
-  (:require [clojure.test :refer [is]])
+  (:require [clojure.test :refer [is]]
+            [clojure.spec.alpha :as s])
   (:import (java.util Date Calendar)
-           (java.text SimpleDateFormat)))
+           (java.text SimpleDateFormat)
+           (clojure.lang ArraySeq)))
 
 (defn now
   "Returns a Java object representing the current date"
@@ -54,8 +56,14 @@
                     (error "Error test!")
                     (catch Exception e
                       (ex-message e)))
-                  "Error test!")))}
-  [error-message]
-  {:pre  [(string? error-message)]
+                  "Error test!"))
+           (is (= (try
+                    (error "Error" "test!" 1 :mode)
+                    (catch Exception e
+                      (ex-message e)))
+                  "Error test! 1 :mode")))}
+  [& error-message]
+  {:pre  [(instance? ArraySeq error-message)]
    :post [(instance? Exception %)]}
-  (throw (new Exception error-message)))
+  (let [e (clojure.string/join " " (map str error-message))]
+    (throw (new Exception e))))
