@@ -1,6 +1,6 @@
-[![Clojure CI](https://github.com/pgegh/collector-core/actions/workflows/clojure.yml/badge.svg)](https://github.com/pgegh/collector-core/actions/workflows/clojure.yml)
+[![Clojure CI](https://github.com/pgegh/collector/actions/workflows/clojure.yml/badge.svg)](https://github.com/pgegh/collector/actions/workflows/clojure.yml)
 
-# collector-core
+# collector
 
 A Clojure application used for storing information of digital media.
 
@@ -12,14 +12,14 @@ TODO
 
 Copyright © 2021 Hovig Manjikian
 
-This file is part of collector-core.
+This file is part of collector.
 
-collector-core is free software: you can redistribute it and/or modify
+collector is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 
-collector-core is distributed in the hope that it will be useful,
+collector is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.

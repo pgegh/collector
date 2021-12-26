@@ -11,5 +11,5 @@ All notable changes to this project will be documented in this file. This change
 - A CHANGELOG.md
 - A preliminary project structure.
 
-[Unreleased]: https://github.com/pgegh/collector-core/compare/v0.0.1...HEAD
-[0.0.1]: https://github.com/pgegh/collector-core/releases/tag/v0.0.1
+[Unreleased]: https://github.com/pgegh/collector/compare/v0.0.1...HEAD
+[0.0.1]: https://github.com/pgegh/collector/releases/tag/v0.0.1

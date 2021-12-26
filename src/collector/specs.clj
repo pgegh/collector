@@ -1,6 +1,6 @@
-(ns collector-core.specs
+(ns collector.specs
   (:require [clojure.spec.alpha :as s]
-            [collector-core.auxiliary-functions :refer [current-year]])
+            [collector.auxiliary-functions :refer [current-year]])
   (:import (java.util Date)))
 
 (s/def ::date #(instance? Date %))
