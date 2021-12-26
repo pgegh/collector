@@ -4,8 +4,23 @@
             [collector.core.auxiliary-functions :refer [error
                                                         now]]
             [collector.core.constructors :refer [create-movie
-                                                 create-initial-database]]
-            [collector.core.core :refer [get-movie]]))
+                                                 create-initial-database]]))
+
+(defn get-movie
+  "Returns the movie from tha database if it exists, otherwise nil."
+  {:test (fn []
+           (is (= (get-movie {:date-created (now)
+                              :movies-db    {"tt0000000" {:title "test"}}}
+                             "tt0000000")
+                  {:title "test"}))
+           (is (nil? (get-movie {:date-created (now)
+                                 :movies-db    {}} "tt000000")))
+           (is (nil? (get-movie {:date-created (now)} "tt0000000"))))}
+  [database imdb-movie-id]
+  {:pre  [(s/valid? :collector.core.specs/database database)
+          (s/valid? :collector.core.specs/imdb-movie-id imdb-movie-id)]
+   :past [(or (s/valid? :collector.core.specs/movie %) (nil? %))]}
+  (get-in database [:movies-db imdb-movie-id]))
 
 (defn add-movie
   "Adds a movie to the state"
