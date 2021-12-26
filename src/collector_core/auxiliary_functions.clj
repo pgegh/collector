@@ -44,7 +44,7 @@
   "Parses a date form a string"
   {:test (fn []
            (is (= (->> (parse-date "yyyy-MM-dd" "2014-12-23")
-                       (.format (SimpleDateFormat "yyyy.MM.dd")))
+                       (.format (SimpleDateFormat. "yyyy.MM.dd")))
                   "2014.12.23")))}
   [pattern date-string]
   (.parse
