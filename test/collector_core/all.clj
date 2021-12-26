@@ -3,6 +3,7 @@
             [collector-core.auxiliary-functions]
             [collector-core.constructors]
             [collector-core.core]
+            [collector-core.core-api]
             [collector-core.specs]))
 
 (deftest a-test

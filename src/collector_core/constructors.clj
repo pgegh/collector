@@ -32,21 +32,16 @@
 (defn create-movie
   "Creates a movie element"
   {:test (fn []
-           (is (= (create-movie "tt0110413")
-                  {:imdb-movie-id "tt0110413"}))
-           (is (= (create-movie "tt0110413"
-                                :title "Léon: The Professional"
+           (is (= (create-movie "movie-title")
+                  {:title "movie-title"}))
+           (is (= (create-movie "movie-title"
                                 :year 1994)
-                  {:imdb-movie-id "tt0110413"
-                   :title         "Léon: The Professional"
-                   :year          1994}))
-           (is (not (s/valid? (create-movie "tt239423" :invalid-property 723423)
-                              {:imdb-movie-id    "tt239423"
-                               :invalid-property 723423}))))}
-  [imdb-movie-id & kvs]
-  {:pre  [string? imdb-movie-id]
+                  {:title "movie-title"
+                   :year  1994})))}
+  [title & kvs]
+  {:pre  [s/valid? :collector-core.specs/title title]
    :post [s/valid? :collector-core.specs/movie]}
-  (let [movie {:imdb-movie-id imdb-movie-id}]
+  (let [movie {:title title}]
     (if (empty? kvs)
       movie
       (apply assoc movie kvs))))
