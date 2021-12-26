@@ -18,7 +18,7 @@
 (ns collector.core.constructors
   (:require [clojure.test :refer [is]]
             [clojure.spec.alpha :as s]
-            [collector.core.auxiliary-functions :refer [now]]))
+            [collector.utils.auxiliary-functions :refer [now]]))
 
 (defn create-initial-database
   "Creates an empty state for the entire application"

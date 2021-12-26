@@ -18,5 +18,5 @@
 (ns collector.core.core
   (:require [clojure.test :refer [is]]
             [clojure.spec.alpha :as s]
-            [collector.core.auxiliary-functions :refer [now]]
+            [collector.utils.auxiliary-functions :refer [now]]
             [collector.core.constructors :refer [create-initial-database]]))

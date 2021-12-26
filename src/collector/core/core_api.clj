@@ -1,9 +1,9 @@
 (ns collector.core.core-api
   (:require [clojure.test :refer [is]]
             [clojure.spec.alpha :as s]
-            [collector.core.auxiliary-functions :refer [error
-                                                        error?
-                                                        now]]
+            [collector.utils.auxiliary-functions :refer [error
+                                                         error?
+                                                         now]]
             [collector.core.constructors :refer [create-movie
                                                  create-initial-database]]))
 
