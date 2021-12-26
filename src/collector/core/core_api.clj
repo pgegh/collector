@@ -2,6 +2,7 @@
   (:require [clojure.test :refer [is]]
             [clojure.spec.alpha :as s]
             [collector.core.auxiliary-functions :refer [error
+                                                        error?
                                                         now]]
             [collector.core.constructors :refer [create-movie
                                                  create-initial-database]]))
@@ -36,8 +37,9 @@
                         (get :movies-db))
                     {"tt0000000" {:title "movie0"}
                      "tt0000001" {:title "movie1"}}))
-             (is (thrown? Exception (-> (add-movie db mv0 "tt0000000")
-                                        (add-movie mv1 "tt0000000"))))))}
+             (is (error? #"^A movie with the same ID exists! ID:"
+                         #(-> (add-movie db mv0 "tt0000000")
+                             (add-movie mv1 "tt0000000"))))))}
   [database movie imdb-movie-id]
   {:pre  [(s/valid? :collector.core.specs/database database)
           (s/valid? :collector.core.specs/movie movie)
@@ -58,10 +60,9 @@
                       (update-movie "tt0000000" :title "updated" :original-title "updated")
                       (get-movie "tt0000000"))
                   {:title "updated" :original-title "updated"}))
-           (is (thrown-with-msg? Exception
-                                 #"The movie you are trying to update does not exist in the database! Movie ID:"
-                                 (-> (create-initial-database)
-                                     (update-movie "tt0000000" :title "updated")))))}
+           (is (error? #"The movie you are trying to update does not exist in the database! Movie ID:"
+                       #(-> (create-initial-database)
+                           (update-movie "tt0000000" :title "updated")))))}
   [database imdb-movie-id & kvs]
   {:pre  [(s/valid? :collector.core.specs/database database)
           (s/valid? :collector.core.specs/imdb-movie-id imdb-movie-id)]
