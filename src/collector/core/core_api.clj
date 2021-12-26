@@ -7,6 +7,14 @@
             [collector.core.constructors :refer [create-movie
                                                  create-initial-database]]))
 
+(defn create-empty-database
+  "Creates a new empty database"
+  {:test (fn []
+           (is (s/valid? :collector.core.specs/database (create-empty-database))))}
+  []
+  {:post [(s/valid? :collector.core.specs/database %)]}
+  (create-initial-database))
+
 (defn get-movie
   "Returns the movie from tha database if it exists, otherwise nil."
   {:test (fn []
