@@ -1,10 +1,10 @@
 (ns collector.all
   (:require [clojure.test :refer :all]
-            [collector.auxiliary-functions]
-            [collector.constructors]
-            [collector.core]
-            [collector.core-api]
-            [collector.specs]))
+            [collector.core.auxiliary-functions]
+            [collector.core.constructors]
+            [collector.core.core]
+            [collector.core.core-api]
+            [collector.core.specs]))
 
 (deftest a-test
   "Bootstrapping with the required namespaces, finds all the firestone.* namespaces (except this one),

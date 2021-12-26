@@ -15,11 +15,11 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with json.  If not, see <https://www.gnu.org/licenses/>.
 
-(ns collector.core
+(ns collector.core.core
   (:require [clojure.test :refer [is]]
             [clojure.spec.alpha :as s]
-            [collector.auxiliary-functions :refer [now]]
-            [collector.constructors :refer [create-initial-database]]))
+            [collector.core.auxiliary-functions :refer [now]]
+            [collector.core.constructors :refer [create-initial-database]]))
 
 
 
@@ -34,7 +34,7 @@
                                  :movies-db    {}} "tt000000")))
            (is (nil? (get-movie {:date-created (now)} "tt0000000"))))}
   [database imdb-movie-id]
-  {:pre  [(s/valid? :collector.specs/database database)
-          (s/valid? :collector.specs/imdb-movie-id imdb-movie-id)]
-   :past [(or (s/valid? :collector.specs/movie %) (nil? %))]}
+  {:pre  [(s/valid? :collector.core.specs/database database)
+          (s/valid? :collector.core.specs/imdb-movie-id imdb-movie-id)]
+   :past [(or (s/valid? :collector.core.specs/movie %) (nil? %))]}
   (get-in database [:movies-db imdb-movie-id]))

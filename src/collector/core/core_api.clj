@@ -1,11 +1,11 @@
-(ns collector.core-api
+(ns collector.core.core-api
   (:require [clojure.test :refer [is]]
             [clojure.spec.alpha :as s]
-            [collector.auxiliary-functions :refer [error
+            [collector.core.auxiliary-functions :refer [error
                                                         now]]
-            [collector.constructors :refer [create-movie
+            [collector.core.constructors :refer [create-movie
                                                  create-initial-database]]
-            [collector.core :refer [get-movie]]))
+            [collector.core.core :refer [get-movie]]))
 
 (defn add-movie
   "Adds a movie to the state"
@@ -24,10 +24,10 @@
              (is (thrown? Exception (-> (add-movie db mv0 "tt0000000")
                                         (add-movie mv1 "tt0000000"))))))}
   [database movie imdb-movie-id]
-  {:pre  [(s/valid? :collector.specs/database database)
-          (s/valid? :collector.specs/movie movie)
-          (s/valid? :collector.specs/imdb-movie-id imdb-movie-id)]
-   :post [(s/valid? :collector.specs/database database)]}
+  {:pre  [(s/valid? :collector.core.specs/database database)
+          (s/valid? :collector.core.specs/movie movie)
+          (s/valid? :collector.core.specs/imdb-movie-id imdb-movie-id)]
+   :post [(s/valid? :collector.core.specs/database database)]}
   (if (:movies-db database)
     (if (get-movie database imdb-movie-id)
       (error "A movie with the same ID exists! ID:" imdb-movie-id)

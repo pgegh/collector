@@ -15,18 +15,18 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with json.  If not, see <https://www.gnu.org/licenses/>.
 
-(ns collector.constructors
+(ns collector.core.constructors
   (:require [clojure.test :refer [is]]
             [clojure.spec.alpha :as s]
-            [collector.auxiliary-functions :refer [now]]))
+            [collector.core.auxiliary-functions :refer [now]]))
 
 (defn create-initial-database
   "Creates an empty state for the entire application"
   {:test (fn []
-           (is (s/valid? :collector.specs/initial-database (create-initial-database (now)))))}
+           (is (s/valid? :collector.core.specs/initial-database (create-initial-database (now)))))}
   [date]
-  {:pre  [s/valid? :collector.specs/date date]
-   :post [s/valid? :collector.specs/initial-database %]}
+  {:pre  [s/valid? :collector.core.specs/date date]
+   :post [s/valid? :collector.core.specs/initial-database %]}
   {:date-created date})
 
 (defn create-movie
@@ -39,8 +39,8 @@
                   {:title "movie-title"
                    :year  1994})))}
   [title & kvs]
-  {:pre  [s/valid? :collector.specs/title title]
-   :post [s/valid? :collector.specs/movie]}
+  {:pre  [s/valid? :collector.core.specs/title title]
+   :post [s/valid? :collector.core.specs/movie]}
   (let [movie {:title title}]
     (if (empty? kvs)
       movie

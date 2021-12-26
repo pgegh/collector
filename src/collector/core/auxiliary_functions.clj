@@ -15,7 +15,7 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with json.  If not, see <https://www.gnu.org/licenses/>.
 
-(ns collector.auxiliary-functions
+(ns collector.core.auxiliary-functions
   (:require [clojure.test :refer [is]])
   (:import (java.util Date Calendar)
            (java.text SimpleDateFormat)
