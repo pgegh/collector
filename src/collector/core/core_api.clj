@@ -10,10 +10,13 @@
 (defn create-empty-database
   "Creates a new empty database"
   {:test (fn []
-           (is (s/valid? :collector.core.specs/database (create-empty-database))))}
-  []
-  {:post [(s/valid? :collector.core.specs/database %)]}
-  (create-initial-database))
+           (is (s/valid? :collector.core.specs/database (create-empty-database (now))))
+           (is (= (create-empty-database #inst"2021-12-26T22:07:05.047-00:00")
+                  {:date-created #inst"2021-12-26T22:07:05.047-00:00"})))}
+  [date]
+  {:pre  [(s/valid? :collector.core.specs/date date)]
+   :post [(s/valid? :collector.core.specs/database %)]}
+  (create-initial-database date))
 
 (defn get-movie
   "Returns the movie from tha database if it exists, otherwise nil."
