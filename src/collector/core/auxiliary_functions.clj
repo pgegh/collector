@@ -19,7 +19,8 @@
   (:require [clojure.test :refer [is]])
   (:import (java.util Date Calendar)
            (java.text SimpleDateFormat)
-           (clojure.lang ArraySeq)))
+           (clojure.lang ArraySeq)
+           (java.util.regex Pattern)))
 
 (defn now
   "Returns a Java object representing the current date"
@@ -68,3 +69,20 @@
    :post [(instance? Exception %)]}
   (let [e (clojure.string/join " " (map str error-message))]
     (throw (new Exception e))))
+
+(defn error?
+  "Check if an exception with the given message has been thrown."
+  {:test (fn []
+           (is (error? "Test error" #(error "Test error")))
+           (is (error? #"^Test" #(error "Test error")))
+           (is (not (error? "Test error" #(+ 1 1)))))}
+  [error-message function]
+  {:pre  [(or (string? error-message) (instance? Pattern error-message)) (fn? function)]
+   :post [(boolean? %)]}
+  (try
+    (do (function)
+        false)
+    (catch Exception e
+      (if (string? error-message)
+        (= error-message (ex-message e))
+        (boolean (re-find error-message (ex-message e)))))))
