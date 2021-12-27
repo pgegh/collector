@@ -4,6 +4,9 @@
             [collector.core.core]
             [collector.core.core-api]
             [collector.core.specs]
+            [collector.persistence.persistence]
+            [collector.persistence.persistence-api]
+            [collector.persistence.specs]
             [collector.utils.auxiliary-functions]))
 
 (deftest a-test
