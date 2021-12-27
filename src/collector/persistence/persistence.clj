@@ -11,18 +11,18 @@
   This approach is better than storing the namespace in the database-file, so that the program is more dynamic."
   {:test (fn []
            (is (= (add-function-namespace "create-empty-database arg1 arg2")
-                  (str "(" (pr-str `create-empty-database) " arg1 arg2)")))
+                  (str "#(" (pr-str `create-empty-database) " arg1 arg2)")))
            (is (= (add-function-namespace "add-movie arg1 arg2")
-                  (str "(" (pr-str `add-movie) " arg1 arg2)")))
+                  (str "#(" (pr-str `add-movie) " arg1 arg2)")))
            (is (= (add-function-namespace "remove-movie arg1 arg2")
-                  (str "(" (pr-str `remove-movie) " arg1 arg2)")))
+                  (str "#(" (pr-str `remove-movie) " arg1 arg2)")))
            (is (= (add-function-namespace "update-movie arg1 arg2")
-                  (str "(" (pr-str `update-movie) " arg1 arg2)")))
+                  (str "#(" (pr-str `update-movie) " arg1 arg2)")))
            (is (error? #"^Invalid event name! Event name:" #(add-function-namespace "Invalid-event"))))}
   [function-string]
   {:pre  [(string? function-string)]
    :post [(string? %)
-          (boolean (re-find #"^\(.+\)$" %))]}
+          (boolean (re-find #"^#\(.+\)$" %))]}
   (let [function-name (re-find #"^[a-zA-Z\-]+" function-string)
         namespaced-function-name (case function-name
                                    "create-empty-database" (pr-str `create-empty-database)
@@ -30,7 +30,7 @@
                                    "remove-movie" (pr-str `remove-movie)
                                    "update-movie" (pr-str `update-movie)
                                    (error "Invalid event name! Event name:" function-name))]
-    (str "(" (clojure.string/replace function-string function-name namespaced-function-name) ")")))
+    (str "#(" (clojure.string/replace function-string function-name namespaced-function-name) ")")))
 
 (defn load-database-file
   "Loads the given database file. The file must exist. Returns the loaded database."
@@ -38,13 +38,40 @@
            (spit "test.db" "create-empty-database #inst\"2021-12-26T22:07:05.047-00:00\"\n")
            (is (= (load-database-file "test.db")
                   {:date-created #inst"2021-12-26T22:07:05.047-00:00"}))
-           ;; todo: test with multiple events.
+           (spit "test.db" "add-movie % \"tt0000000\" \"test\"\n" :append true)
+           (is (= (load-database-file "test.db")
+                  {:date-created #inst"2021-12-26T22:07:05.047-00:00"
+                   :movies-db    {"tt0000000" {:title "test"}}}))
            (io/delete-file "test.db"))}
   [database-file-name]
   {:pre  [(s/valid? :collector.persistence.specs/file-name database-file-name)
           (.exists (io/file database-file-name))]
-   :post [s/valid? :collector.core.specs/database %]}
+   :post [(s/valid? :collector.core.specs/database %)]}
   (as-> (slurp database-file-name) $
         (clojure.string/split-lines $)
         (map add-function-namespace $)
-        (reduce (fn [acc event] ((eval (read-string event)) acc)) (eval (read-string (first $))) (drop 1 $))))
+        (reduce (fn [acc event] ((eval (read-string event)) acc))
+                ((eval (read-string (first $))))
+                (drop 1 $))))
+
+(defn persist-event
+  "Will append the database file with a new event"
+  {:test (fn []
+           (spit "test.db" "create-something\n")
+           (persist-event "test.db" {:type :add-movie :args [:x 1 "y" true]})
+           (is (= (slurp "test.db")
+                  "create-something\nadd-movie % :x 1 \"y\" true\n"))
+           (io/delete-file "test.db"))}
+  [database-file-name event]
+  {:pre  [(s/valid? :collector.persistence.specs/file-name database-file-name)
+          (.exists (io/file database-file-name))
+          (s/valid? :collector.persistence.specs/event event)]
+   :post [(nil? %)]}
+  (spit database-file-name
+        (str (case (:type event)
+               :add-movie "add-movie % "
+               :update-movie "update-movie % "
+               :remove-movie "remove-movie % ")
+             (apply pr-str (:args event))
+             "\n")
+        :append true))

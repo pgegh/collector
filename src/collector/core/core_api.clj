@@ -35,32 +35,31 @@
   (get-in database [:movies-db imdb-movie-id]))
 
 (defn add-movie
-  "Adds a movie to the state"
+  "Adds a new movie to the state"
   {:test (fn []
-           (let [db (create-initial-database (now))
-                 mv0 (create-movie "movie0")
-                 mv1 (create-movie "movie1")]
-             (is (= (-> (add-movie db mv0 "tt0000000")
+           (let [db (create-initial-database (now))]
+             (is (= (-> (add-movie db "tt0000000" "movie0")
                         (get-in [:movies-db "tt0000000"]))
                     {:title "movie0"}))
-             (is (= (-> (add-movie db mv0 "tt0000000")
-                        (add-movie mv1 "tt0000001")
+             (is (= (-> (add-movie db "tt0000000" "movie0")
+                        (add-movie "tt0000001" "movie1")
                         (get :movies-db))
                     {"tt0000000" {:title "movie0"}
                      "tt0000001" {:title "movie1"}}))
              (is (error? #"^A movie with the same ID exists! ID:"
-                         #(-> (add-movie db mv0 "tt0000000")
-                              (add-movie mv1 "tt0000000"))))))}
-  [database movie imdb-movie-id]
-  {:pre  [(s/valid? :collector.core.specs/database database)
-          (s/valid? :collector.core.specs/movie movie)
-          (s/valid? :collector.core.specs/imdb-movie-id imdb-movie-id)]
-   :post [(s/valid? :collector.core.specs/database database)]}
-  (if (:movies-db database)
-    (if (get-movie database imdb-movie-id)
-      (error "A movie with the same ID exists! ID:" imdb-movie-id)
-      (update database :movies-db #(assoc % imdb-movie-id movie)))
-    (assoc database :movies-db {imdb-movie-id movie})))
+                         #(-> (add-movie db "tt0000000" "movie0")
+                              (add-movie "tt0000000" "movie1"))))))}
+  ([database imdb-movie-id title & kvs]
+   {:pre  [(s/valid? :collector.core.specs/database database)
+           (s/valid? :collector.core.specs/imdb-movie-id imdb-movie-id)
+           (s/valid? :collector.core.specs/title title)]
+    :post [(s/valid? :collector.core.specs/database %)]}
+   (let [movie (apply create-movie title kvs)]
+     (if (:movies-db database)
+       (if (get-movie database imdb-movie-id)
+         (error "A movie with the same ID exists! ID:" imdb-movie-id)
+         (update database :movies-db #(assoc % imdb-movie-id movie)))
+       (assoc database :movies-db {imdb-movie-id movie})))))
 
 (defn update-movie
   "Updates the information of a movie in the database with the provided values.
