@@ -5,7 +5,6 @@
 
 (s/def ::date #(instance? Date %))
 (s/def ::date-created ::date)
-(s/def ::initial-database (s/keys :req-un [::date-created]))
 
 (s/def ::imdb-movie-id (s/and string?
                               #(re-find #"^tt[0-9]+$" %)))

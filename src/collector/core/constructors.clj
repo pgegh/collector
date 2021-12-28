@@ -23,14 +23,14 @@
 (defn create-initial-database
   "Creates an empty state for the entire application"
   {:test (fn []
-           (is (s/valid? :collector.core.specs/initial-database (create-initial-database (now))))
-           (is (s/valid? :collector.core.specs/initial-database (create-initial-database))))}
+           (is (s/valid? :collector.core.specs/database (create-initial-database (now))))
+           (is (s/valid? :collector.core.specs/database (create-initial-database))))}
   ([]
    {:post [s/valid? :collector.core.specs/date %]}
    (create-initial-database (now)))
   ([date]
    {:pre  [s/valid? :collector.core.specs/date date]
-    :post [s/valid? :collector.core.specs/initial-database %]}
+    :post [s/valid? :collector.core.specs/database %]}
    {:date-created date}))
 
 (defn create-movie
