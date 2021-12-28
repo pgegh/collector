@@ -5,6 +5,12 @@ of [keepachangelog.com](http://keepachangelog.com/).
 
 ## [Unreleased]
 
+## [0.2.0] - 2021-12-28
+
+### Added
+
+- Engine for event local persistence
+
 ## [0.1.0] - 2021-12-26
 
 ### Added
@@ -27,7 +33,9 @@ of [keepachangelog.com](http://keepachangelog.com/).
 - A CHANGELOG.md
 - A preliminary project structure.
 
-[Unreleased]: https://github.com/pgegh/collector/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/pgegh/collector/compare/v0.2.0...HEAD
+
+[0.1.0]: https://github.com/pgegh/collector/compare/v0.1.0...v0.2.0
 
 [0.1.0]: https://github.com/pgegh/collector/compare/v0.0.1...v0.1.0
 

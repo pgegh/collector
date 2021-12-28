@@ -1,4 +1,4 @@
-(defproject collector "0.1.0-SNAPSHOT"
+(defproject collector "0.2.0-SNAPSHOT"
   :description "An application for storing data about digital media"
   :url "https://github.com/pgegh/collector"
   :license {:name "GPLv3"
