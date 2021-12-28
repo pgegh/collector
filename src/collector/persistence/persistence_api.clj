@@ -33,7 +33,7 @@
      (load-database-file database-file-name)
      (let [date (now)
            database (create-empty-database date)]
-       (spit database-file-name (str "create-empty-database " (pr-str date) "\n"))
+       (spit database-file-name (str (pr-str date) " create-empty-database " (pr-str date) "\n"))
        database)))
   ([database database-file-name event]
    {:pre  [(s/valid? :collector.core.specs/database database)
@@ -41,9 +41,11 @@
            (.exists (io/file database-file-name))
            (s/valid? :collector.persistence.specs/event event)]
     :post [(s/valid? :collector.core.specs/database %)]}
-   (let [updated-database (case (:type event)
-                            :add-movie (apply add-movie database (:args event))
-                            :update-movie (apply update-movie database (:args event))
-                            :remove-movie (apply remove-movie database (:args event)))]
-     (persist-event database-file-name event)
-     updated-database)))
+   (let [date (now)
+         updated-database (assoc database :date-updated date)
+         resulting-database (case (:type event)
+                              :add-movie (apply add-movie updated-database (:args event))
+                              :update-movie (apply update-movie updated-database (:args event))
+                              :remove-movie (apply remove-movie updated-database (:args event)))]
+     (persist-event database-file-name event date)
+     resulting-database)))
