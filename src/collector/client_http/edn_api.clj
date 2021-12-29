@@ -17,3 +17,8 @@
   [imdb-movie-id title]
   (time (db->client-db (swap! database-atom #(handle-event % @database-file-name-atom {:type :add-movie
                                                                                        :args [imdb-movie-id title]})))))
+
+(defn remove-movie!
+  [imdb-movie-id]
+  (time (db->client-db (swap! database-atom #(handle-event % @database-file-name-atom {:type :remove-movie
+                                                                                       :args [imdb-movie-id]})))))
