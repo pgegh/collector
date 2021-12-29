@@ -13,3 +13,4 @@ pom.xml.asc
 .idea
 /api-key.json
 *.db
+/src/collector/client_http/tets_page.html
