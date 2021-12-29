@@ -2,6 +2,7 @@
   (:require [clojure.data.json :refer [read-str]]
             [collector.client-http.edn-api :refer [load-database!
                                                    add-movie!
+                                                   get-movie!
                                                    remove-movie!
                                                    update-movie!]]))
 
@@ -43,6 +44,9 @@
           (let [imdb-movie-id (:imdb-movie-id params)
                 title (:title params)]
             (create-response (update-movie! imdb-movie-id title)))
+
+          (= uri "/get-movie")
+          (create-response (get-movie! (:imdb-movie-id params)))
 
           :else
           {:status  404

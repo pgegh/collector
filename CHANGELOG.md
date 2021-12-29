@@ -5,6 +5,12 @@ of [keepachangelog.com](http://keepachangelog.com/).
 
 ## [Unreleased]
 
+## [0.3.0] - 2021-12-29
+
+### Added
+
+- A basic http client
+
 ## [0.2.0] - 2021-12-28
 
 ### Added
@@ -33,7 +39,9 @@ of [keepachangelog.com](http://keepachangelog.com/).
 - A CHANGELOG.md
 - A preliminary project structure.
 
-[Unreleased]: https://github.com/pgegh/collector/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/pgegh/collector/compare/v0.3.0...HEAD
+
+[0.3.0]: https://github.com/pgegh/collector/compare/v0.2.0...v0.3.0
 
 [0.2.0]: https://github.com/pgegh/collector/compare/v0.1.0...v0.2.0
 

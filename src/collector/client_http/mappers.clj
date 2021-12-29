@@ -4,3 +4,7 @@
 (defn db->client-db
   [database]
   (write-str database))
+
+(defn movie->client-movie
+  [movie]
+  (write-str movie))
