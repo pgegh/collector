@@ -1,9 +1,11 @@
 (ns collector.client-http.edn-api
   (:require [clojure.spec.alpha :as s]
             [collector.client-http.mappers :refer [db->client-db
-                                                   movie->client-movie]]
+                                                   movie->client-movie
+                                                   filenames->client-filenames]]
             [collector.core.core-api :refer [get-movie]]
-            [collector.persistence.persistence-api :refer [handle-event]]))
+            [collector.persistence.persistence-api :refer [handle-event
+                                                           get-available-database-files]]))
 
 (defonce database-atom (atom nil))
 (defonce database-file-name-atom (atom nil))
@@ -33,3 +35,7 @@
 (defn get-movie!
   [imdb-movie-id]
   (time (movie->client-movie (get-movie @database-atom imdb-movie-id))))
+
+(defn get-available-database-files!
+  []
+  (time (filenames->client-filenames (get-available-database-files))))

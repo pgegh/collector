@@ -4,7 +4,8 @@
                                                    add-movie!
                                                    get-movie!
                                                    remove-movie!
-                                                   update-movie!]]))
+                                                   update-movie!
+                                                   get-available-database-files!]]))
 
 
 (defn create-response
@@ -47,6 +48,9 @@
 
           (= uri "/get-movie")
           (create-response (get-movie! (:imdb-movie-id params)))
+
+          (= uri "/get-available-database-files")
+          (create-response (get-available-database-files!))
 
           :else
           {:status  404
