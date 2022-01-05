@@ -29,20 +29,20 @@
   If both execution and persistence are successful the new updated database will be returned,
   otherwise exception will be thrown."
   {:test (fn []
-           (is (s/valid? :collector.core.specs/database (handle-event "test.db")))
-           (is (.exists (io/file "test.db")))
-           (is (s/valid? :collector.core.specs/database (handle-event "test.db")))
-           (io/delete-file "test.db")
-           (is (= (-> (handle-event "test.db")
-                      (handle-event "test.db" {:type :add-movie :args ["tt0000000" "test1"]})
-                      (handle-event "test.db" {:type :add-movie :args ["tt0000001" "test2"]})
-                      (handle-event "test.db" {:type :remove-movie :args ["tt0000001"]})
+           (is (s/valid? :collector.core.specs/database (handle-event "clojure__test.db")))
+           (is (.exists (io/file "clojure__test.db")))
+           (is (s/valid? :collector.core.specs/database (handle-event "clojure__test.db")))
+           (io/delete-file "clojure__test.db")
+           (is (= (-> (handle-event "clojure__test.db")
+                      (handle-event "clojure__test.db" {:type :add-movie :args ["tt0000000" "test1"]})
+                      (handle-event "clojure__test.db" {:type :add-movie :args ["tt0000001" "test2"]})
+                      (handle-event "clojure__test.db" {:type :remove-movie :args ["tt0000001"]})
                       (get :movies-db))
                   {"tt0000000" {:title "test1"}}))
-           (is (= (-> (handle-event "test.db")
+           (is (= (-> (handle-event "clojure__test.db")
                       (:movies-db))
                   {"tt0000000" {:title "test1"}}))
-           (io/delete-file "test.db"))}
+           (io/delete-file "clojure__test.db"))}
   ([database-file-name]
    {:pre  [(s/valid? :collector.persistence.specs/file-name database-file-name)]
     :post [(s/valid? :collector.core.specs/database %)]}

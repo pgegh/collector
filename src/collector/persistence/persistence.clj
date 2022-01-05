@@ -61,15 +61,15 @@
 (defn load-database-file
   "Loads the given database file. The file must exist. Returns the loaded database."
   {:test (fn []
-           (spit "test.db" "#inst \"2021-12-27T22:07:05.047-00:00\" create-empty-database #inst\"2021-12-26T22:07:05.047-00:00\"\n")
-           (is (= (load-database-file "test.db")
+           (spit "clojure__test.db" "#inst \"2021-12-27T22:07:05.047-00:00\" create-empty-database #inst\"2021-12-26T22:07:05.047-00:00\"\n")
+           (is (= (load-database-file "clojure__test.db")
                   {:date-created #inst"2021-12-26T22:07:05.047-00:00"}))
-           (spit "test.db" "#inst \"2021-12-27T22:07:05.047-00:00\" add-movie % \"tt0000000\" \"test\"\n" :append true)
-           (is (= (load-database-file "test.db")
+           (spit "clojure__test.db" "#inst \"2021-12-27T22:07:05.047-00:00\" add-movie % \"tt0000000\" \"test\"\n" :append true)
+           (is (= (load-database-file "clojure__test.db")
                   {:date-created #inst"2021-12-26T22:07:05.047-00:00"
                    :date-updated #inst"2021-12-27T22:07:05.047-00:00"
                    :movies-db    {"tt0000000" {:title "test"}}}))
-           (io/delete-file "test.db"))}
+           (io/delete-file "clojure__test.db"))}
   [database-file-name]
   {:pre  [(s/valid? :collector.persistence.specs/file-name database-file-name)
           (.exists (io/file database-file-name))]
@@ -86,13 +86,13 @@
 (defn persist-event
   "Will append the database file with a new event"
   {:test (fn []
-           (spit "test.db" "create-something\n")
-           (persist-event "test.db"
+           (spit "clojure__test.db" "create-something\n")
+           (persist-event "clojure__test.db"
                           {:type :add-movie :args [:x 1 "y" true]}
                           #inst"2021-12-27T22:07:05.047-00:00")
-           (is (= (slurp "test.db")
+           (is (= (slurp "clojure__test.db")
                   "create-something\n#inst \"2021-12-27T22:07:05.047-00:00\" add-movie % :x 1 \"y\" true\n"))
-           (io/delete-file "test.db"))}
+           (io/delete-file "clojure__test.db"))}
   [database-file-name event date]
   {:pre  [(s/valid? :collector.persistence.specs/file-name database-file-name)
           (.exists (io/file database-file-name))
