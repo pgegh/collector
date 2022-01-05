@@ -66,3 +66,19 @@
                               :remove-movie (apply remove-movie updated-database (:args event)))]
      (persist-event database-file-name event date)
      resulting-database)))
+
+(defn get-available-database-files
+  "Will return a list of the available database files."
+  {:test (fn []
+           (is (not (some #(= "clojure__test.db" %) (get-available-database-files))))
+           (spit "clojure__test.db" "")
+           (println (apply list (get-available-database-files)))
+           (is (some #(= "clojure__test.db" %) (get-available-database-files)))
+           (io/delete-file "clojure__test.db"))}
+  []
+  {:post [(s/valid? (s/coll-of string? :type vector?) %)]}
+  (->> (io/file ".")
+       (file-seq)
+       (filter #(boolean (re-find #"^\./[\w\-\. ]+\.[dD][bB]$" (.getPath %))))
+       (map #(.getName %))
+       (into [])))
