@@ -1,5 +1,6 @@
 (ns collector.client-http.edn-api
   (:require [clojure.spec.alpha :as s]
+            [clojure.data.json :refer [write-str]]
             [collector.client-http.mappers :refer [db->client-db
                                                    movie->client-movie
                                                    filenames->client-filenames]]
@@ -15,7 +16,7 @@
   {:pre [(s/valid? :collector.persistence.specs/file-name database-file-name)]}
   (let [database (as-> (reset! database-file-name-atom database-file-name) $
                        (reset! database-atom (handle-event $)))]
-    (time (db->client-db database))))
+    (time (write-str (db->client-db database)))))
 
 (defn add-movie!
   [imdb-movie-id title]
