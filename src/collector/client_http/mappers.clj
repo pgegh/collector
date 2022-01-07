@@ -13,9 +13,9 @@
                []
                (->> (get database :movies-db)
                     (keys)
-                    (map (fn [key] {:id   key
-                                    :name (get-in database [:movies-db key :title])
-                                    :type "Movies"}))
+                    (map (fn [key] {:id       key
+                                    :name     (get-in database [:movies-db key :title])
+                                    :category "Movies"}))
                     (into [])))
    })
 
