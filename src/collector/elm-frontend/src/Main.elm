@@ -136,9 +136,9 @@ view model =
             { title = "Collector - Set Database"
             , body =
                 [ h1 [] [ text "COLLECTOR" ]
-                , h2 [] [ text "Select a database" ]
                 , div []
-                    [ select
+                    [ h2 [] [ text "Select a database" ]
+                    , select
                         [ name "Available databases"
                         , size 10
                         , on "change" (JD.map UpdateSelectedDBFileName targetValue)
@@ -156,9 +156,12 @@ view model =
                         [ text "Load Selected Database" ]
                     ]
                 , div []
-                    [ input [ type_ "text", on "change" (JD.map UpdateNewDBFileName targetValue) ] []
-                    , button [ onClick Create ] [ text "Create New Database" ]
+                    [ h2 [] [ text "Create a new database" ]
+                    , input [ type_ "text", on "change" (JD.map UpdateNewDBFileName targetValue) ] []
+                    , button [ onClick Create ] [ text "Create" ]
                     ]
+                , div []
+                    [ p [] [ text "To delete an existing database, delete the file from the file-system." ] ]
                 ]
             }
 
