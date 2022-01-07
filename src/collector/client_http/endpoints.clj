@@ -7,14 +7,16 @@
                                                    update-movie!
                                                    get-available-database-files!]]))
 
+(def allowed-ports "http://localhost:8000")
 
 (defn create-response
   [client-state]
   (println client-state)
   {:status  200
-   :headers {"Content-Type"                 "application/edn; charset=utf-8"
-             "Access-Control-Allow-Origin"  "*"
-             "Access-Control-Allow-Methods" "*"}
+   :headers {"Content-Type"                 "application/json; charset=utf-8"
+             "Access-Control-Allow-Origin"  allowed-ports
+             "Access-Control-Allow-Methods" "*"
+             "Access-Control-Allow-Headers" "*"}
    :body    client-state})
 
 (defn handler!
