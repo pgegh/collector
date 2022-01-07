@@ -6,6 +6,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Http
 import Json.Decode as JD
+import Json.Encode as JE
 
 
 main : Program () Model Msg
@@ -26,6 +27,7 @@ type Model
     = Loading
     | StartPage StartPageData
     | ErrorDBFileNames
+    | MainPage MainPageData
     | ErrorPage String
 
 
@@ -33,6 +35,19 @@ type alias StartPageData =
     { dbFileNames : FileNames
     , selectedDBFile : String
     , newDBFileName : String
+    }
+
+
+type alias MainPageData =
+    { category : String
+    , entries : List Entry
+    }
+
+
+type alias Entry =
+    { id : String
+    , name : String
+    , category : String
     }
 
 
@@ -61,20 +76,19 @@ isDBFileSelected spData =
 
 type Msg
     = Load
-    | Create
     | GetFileNames
     | GotFileNames (Result Http.Error FileNames)
+    | GotMainPageData (Result Http.Error MainPageData)
     | UpdateSelectedDBFileName String
     | UpdateNewDBFileName String
+    | CreateNewDB
+    | UpdateSelectedCategory String
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         Load ->
-            ( model, Cmd.none )
-
-        Create ->
             ( model, Cmd.none )
 
         GetFileNames ->
@@ -94,6 +108,14 @@ update msg model =
                     , Cmd.none
                     )
 
+        GotMainPageData result ->
+            case result of
+                Err _ ->
+                    ( ErrorPage "Error in the loaded database!", Cmd.none )
+
+                Ok mainPageData ->
+                    ( MainPage mainPageData, Cmd.none )
+
         UpdateSelectedDBFileName fileName ->
             case model of
                 StartPage startPageData ->
@@ -109,6 +131,26 @@ update msg model =
 
                 _ ->
                     ( ErrorPage "Trying to change new database file name when not in StartPage.", Cmd.none )
+
+        CreateNewDB ->
+            let
+                fileName =
+                    case model of
+                        StartPage spData ->
+                            spData.newDBFileName
+
+                        _ ->
+                            ""
+            in
+            ( MainPage { entries = [], category = "All" }, loadDB fileName )
+
+        UpdateSelectedCategory category ->
+            case model of
+                MainPage mainPageData ->
+                    ( MainPage { mainPageData | category = category }, Cmd.none )
+
+                _ ->
+                    ( ErrorPage "Trying to change category when not in MainPage.", Cmd.none )
 
 
 
@@ -158,7 +200,7 @@ view model =
                 , div []
                     [ h2 [] [ text "Create a new database" ]
                     , input [ type_ "text", on "change" (JD.map UpdateNewDBFileName targetValue) ] []
-                    , button [ onClick Create ] [ text "Create" ]
+                    , button [ onClick CreateNewDB ] [ text "Create" ]
                     ]
                 , div []
                     [ p [] [ text "To delete an existing database, delete the file from the file-system." ] ]
@@ -170,6 +212,29 @@ view model =
             , body =
                 [ h1 [] [ text "Error! Could not retrieve available database files" ]
                 , button [ onClick GetFileNames ] [ text "Retry" ]
+                ]
+            }
+
+        MainPage mainPageData ->
+            { title = "Collector - Main Page"
+            , body =
+                [ div []
+                    [ select
+                        [ name "Categories" ]
+                        [ option [ value "All" ] [ text "All" ]
+                        , option [ value "Movies" ] [ text "Movies" ]
+                        ]
+                    ]
+                , div []
+                    [ select
+                        [ name "Entries" ]
+                        (List.map
+                            (\entry ->
+                                option [ value entry.id ] [ text entry.name ]
+                            )
+                            mainPageData.entries
+                        )
+                    ]
                 ]
             }
 
@@ -199,10 +264,50 @@ loadFileNames =
         }
 
 
+loadDB : String -> Cmd Msg
+loadDB fileName =
+    Http.post
+        { url = baseUrl ++ "/load-database"
+        , body = Http.jsonBody <| JE.bool True
+        , expect = Http.expectJson GotMainPageData mainPageDataDecoder
+        }
 
+
+
+-- JE.object [ ( "database-file-name", JE.string fileName ) ]
+--createDB : Cmd Msg
+--createDB =
+--    Http.get
+--        { url = baseUrl ++ "/get-available-database-files"
+--        , expect = Http.expectJson GotDB dbDecoder
+--        }
 -- JSON
 
 
-fileNameDecoder : JD.Decoder (List String)
+fileNameDecoder : JD.Decoder FileNames
 fileNameDecoder =
     JD.list JD.string
+
+
+mainPageDataDecoder : JD.Decoder MainPageData
+mainPageDataDecoder =
+    JD.map2 MainPageData
+        (JD.field "category" JD.string)
+        (JD.field "entries" entriesDecoder)
+
+
+entriesDecoder : JD.Decoder (List Entry)
+entriesDecoder =
+    JD.list entryDecoder
+
+
+entryDecoder : JD.Decoder Entry
+entryDecoder =
+    JD.map3 Entry
+        (JD.field "id" JD.string)
+        (JD.field "name" JD.string)
+        (JD.field "category" JD.string)
+
+
+
+-- converter
