@@ -21,8 +21,8 @@
 
 (defn movie->client-movie
   [movie]
-  (write-str movie))
+  movie)
 
 (defn filenames->client-filenames
   [filenames]
-  (write-str filenames))
+  filenames)

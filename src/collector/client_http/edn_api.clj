@@ -20,23 +20,23 @@
 
 (defn add-movie!
   [imdb-movie-id title]
-  (time (db->client-db (swap! database-atom #(handle-event % @database-file-name-atom {:type :add-movie
-                                                                                       :args [imdb-movie-id title]})))))
+  (time (write-str (db->client-db (swap! database-atom #(handle-event % @database-file-name-atom {:type :add-movie
+                                                                                                  :args [imdb-movie-id title]}))))))
 
 (defn remove-movie!
   [imdb-movie-id]
-  (time (db->client-db (swap! database-atom #(handle-event % @database-file-name-atom {:type :remove-movie
-                                                                                       :args [imdb-movie-id]})))))
+  (time (write-str (db->client-db (swap! database-atom #(handle-event % @database-file-name-atom {:type :remove-movie
+                                                                                                  :args [imdb-movie-id]}))))))
 
 (defn update-movie!
   [imdb-movie-id title]
-  (time (db->client-db (swap! database-atom #(handle-event % @database-file-name-atom {:type :update-movie
-                                                                                       :args [imdb-movie-id :title title]})))))
+  (time (write-str (db->client-db (swap! database-atom #(handle-event % @database-file-name-atom {:type :update-movie
+                                                                                                  :args [imdb-movie-id :title title]}))))))
 
 (defn get-movie!
   [imdb-movie-id]
-  (time (movie->client-movie (get-movie @database-atom imdb-movie-id))))
+  (time (write-str (movie->client-movie (get-movie @database-atom imdb-movie-id)))))
 
 (defn get-available-database-files!
   []
-  (time (filenames->client-filenames (get-available-database-files))))
+  (time (write-str (filenames->client-filenames (get-available-database-files)))))
