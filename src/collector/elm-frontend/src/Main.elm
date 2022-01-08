@@ -268,19 +268,12 @@ loadDB : String -> Cmd Msg
 loadDB fileName =
     Http.post
         { url = baseUrl ++ "/load-database"
-        , body = Http.jsonBody <| JE.bool True
+        , body = Http.jsonBody <| JE.object [ ( "database-file-name", JE.string fileName ) ]
         , expect = Http.expectJson GotMainPageData mainPageDataDecoder
         }
 
 
 
--- JE.object [ ( "database-file-name", JE.string fileName ) ]
---createDB : Cmd Msg
---createDB =
---    Http.get
---        { url = baseUrl ++ "/get-available-database-files"
---        , expect = Http.expectJson GotDB dbDecoder
---        }
 -- JSON
 
 
