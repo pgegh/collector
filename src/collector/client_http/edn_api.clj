@@ -14,7 +14,10 @@
 (defn load-database!
   [database-file-name]
   {:pre [(s/valid? :collector.persistence.specs/file-name database-file-name)]}
-  (let [database (as-> (reset! database-file-name-atom database-file-name) $
+  (let [extended-database-file-name (if (re-find #".[dD][bB]$" database-file-name)
+                                      database-file-name
+                                      (str database-file-name ".db"))
+        database (as-> (reset! database-file-name-atom extended-database-file-name) $
                        (reset! database-atom (handle-event $)))]
     (time (write-str (db->client-db database)))))
 

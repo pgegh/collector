@@ -44,7 +44,7 @@
                   {"tt0000000" {:title "test1"}}))
            (io/delete-file "clojure__test.db"))}
   ([database-file-name]
-   {:pre  [(s/valid? :collector.persistence.specs/file-name database-file-name)]
+   {:pre  [(s/valid? :collector.persistence.specs/database-file-name database-file-name)]
     :post [(s/valid? :collector.core.specs/database %)]}
    (if (.exists (io/file database-file-name))
      (load-database-file database-file-name)
@@ -54,7 +54,7 @@
        database)))
   ([database database-file-name event]
    {:pre  [(s/valid? :collector.core.specs/database database)
-           (s/valid? :collector.persistence.specs/file-name database-file-name)
+           (s/valid? :collector.persistence.specs/database-file-name database-file-name)
            (.exists (io/file database-file-name))
            (s/valid? :collector.persistence.specs/event event)]
     :post [(s/valid? :collector.core.specs/database %)]}

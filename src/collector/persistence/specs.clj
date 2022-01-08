@@ -19,6 +19,7 @@
   (:require [clojure.spec.alpha :as s]))
 
 (s/def ::file-name (s/and string? #(re-find #"^[\w\-. ]+$" %)))
+(s/def ::database-file-name (s/and string? #(re-find #"^[\w\-. ]+.[dD][bB]$" %)))
 (s/def ::args vector?)
 (s/def ::type #{:add-movie
                 :update-movie
