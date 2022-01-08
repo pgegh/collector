@@ -192,6 +192,9 @@ view model =
                             startPageData.dbFileNames
                         )
                     , button
+                        [ onClick GetFileNames ]
+                        [ text "Refresh" ]
+                    , button
                         [ onClick Load
                         , disabled (not (isDBFileSelected startPageData))
                         ]
@@ -200,7 +203,7 @@ view model =
                 , div []
                     [ h2 [] [ text "Create a new database" ]
                     , input [ type_ "text", on "change" (JD.map UpdateNewDBFileName targetValue) ] []
-                    , button [ onClick CreateNewDB ] [ text "Create" ]
+                    , button [ onClick CreateNewDB, disabled (startPageData.newDBFileName == "") ] [ text "Create" ]
                     ]
                 , div []
                     [ p [] [ text "To delete an existing database, delete the file from the file-system." ] ]
