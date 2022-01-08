@@ -75,21 +75,30 @@ isDBFileSelected spData =
 
 
 type Msg
-    = Load
+    = CreateNewDB
     | GetFileNames
     | GotFileNames (Result Http.Error FileNames)
     | GotMainPageData (Result Http.Error MainPageData)
-    | UpdateSelectedDBFileName String
+    | LoadDB
     | UpdateNewDBFileName String
-    | CreateNewDB
     | UpdateSelectedCategory String
+    | UpdateSelectedDBFileName String
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        Load ->
-            ( model, Cmd.none )
+        CreateNewDB ->
+            let
+                fileName =
+                    case model of
+                        StartPage spData ->
+                            spData.newDBFileName
+
+                        _ ->
+                            ""
+            in
+            ( MainPage { entries = [], category = "All" }, loadDB fileName )
 
         GetFileNames ->
             ( Loading, loadFileNames )
@@ -116,13 +125,17 @@ update msg model =
                 Ok mainPageData ->
                     ( MainPage mainPageData, Cmd.none )
 
-        UpdateSelectedDBFileName fileName ->
-            case model of
-                StartPage startPageData ->
-                    ( StartPage { startPageData | selectedDBFile = fileName }, Cmd.none )
+        LoadDB ->
+            let
+                fileName =
+                    case model of
+                        StartPage spData ->
+                            spData.selectedDBFile
 
-                _ ->
-                    ( ErrorPage "Trying to update selected database file name when not in StartPage.", Cmd.none )
+                        _ ->
+                            ""
+            in
+            ( MainPage { entries = [], category = "All" }, loadDB fileName )
 
         UpdateNewDBFileName fileName ->
             case model of
@@ -132,18 +145,6 @@ update msg model =
                 _ ->
                     ( ErrorPage "Trying to change new database file name when not in StartPage.", Cmd.none )
 
-        CreateNewDB ->
-            let
-                fileName =
-                    case model of
-                        StartPage spData ->
-                            spData.newDBFileName
-
-                        _ ->
-                            ""
-            in
-            ( MainPage { entries = [], category = "All" }, loadDB fileName )
-
         UpdateSelectedCategory category ->
             case model of
                 MainPage mainPageData ->
@@ -151,6 +152,14 @@ update msg model =
 
                 _ ->
                     ( ErrorPage "Trying to change category when not in MainPage.", Cmd.none )
+
+        UpdateSelectedDBFileName fileName ->
+            case model of
+                StartPage startPageData ->
+                    ( StartPage { startPageData | selectedDBFile = fileName }, Cmd.none )
+
+                _ ->
+                    ( ErrorPage "Trying to update selected database file name when not in StartPage.", Cmd.none )
 
 
 
@@ -195,7 +204,7 @@ view model =
                         [ onClick GetFileNames ]
                         [ text "Refresh" ]
                     , button
-                        [ onClick Load
+                        [ onClick LoadDB
                         , disabled (not (isDBFileSelected startPageData))
                         ]
                         [ text "Load Selected Database" ]
