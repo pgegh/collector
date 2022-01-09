@@ -19,10 +19,10 @@
 (ns collector.client-http.endpoints
   (:require [clojure.data.json :refer [read-str]]
             [collector.client-http.edn-api :refer [load-database!
-                                                   add-movie!
-                                                   get-movie!
-                                                   remove-movie!
-                                                   update-movie!
+                                                   add-video!
+                                                   get-video!
+                                                   remove-video!
+                                                   update-video!
                                                    get-available-database-files!]]))
 
 (def allowed-ports "http://localhost:8000")
@@ -60,22 +60,22 @@
       (cond (= uri "/load-database")
             (create-response (load-database! (:database-file-name params)))
 
-            (= uri "/add-movie")
-            (let [imdb-movie-id (:imdb-movie-id params)
+            (= uri "/add-video")
+            (let [id (:id params)
+                  title (:name params)]
+              (create-response (add-video! id title)))
+
+            (= uri "/remove-video")
+            (let [id (:id params)]
+              (create-response (remove-video! id)))
+
+            (= uri "/update-video")
+            (let [id (:id params)
                   title (:title params)]
-              (create-response (add-movie! imdb-movie-id title)))
+              (create-response (update-video! id title)))
 
-            (= uri "/remove-movie")
-            (let [imdb-movie-id (:imdb-movie-id params)]
-              (create-response (remove-movie! imdb-movie-id)))
-
-            (= uri "/update-movie")
-            (let [imdb-movie-id (:imdb-movie-id params)
-                  title (:title params)]
-              (create-response (update-movie! imdb-movie-id title)))
-
-            (= uri "/get-movie")
-            (create-response (get-movie! (:imdb-movie-id params)))
+            (= uri "/get-video")
+            (create-response (get-video! (:id params)))
 
             (= uri "/get-available-database-files")
             (create-response (get-available-database-files!))

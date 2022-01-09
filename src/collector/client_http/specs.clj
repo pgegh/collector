@@ -28,9 +28,18 @@
                   :c :video/id
                   :e :person/id))
 (s/def ::name string?)
+(s/def ::readable-date #(re-find #"^[0-9][0-9]/[0-9][0-9]/[0-9][0-9][0-9][0-9]$" %))
+(s/def ::db-date-created ::readable-date)
+(s/def ::db-file-name :collector.persistence.specs/database-file-name)
+(s/def ::db-date-updated ::readable-date)
+(s/def ::categories (s/coll-of keyword? :type vector?))
 (s/def ::entry (s/keys :req-un [::id
                                 ::name
                                 ::category]))
 (s/def ::entries (s/coll-of ::entry :kind vector?))
 (s/def ::client-db (s/keys :req-un [::selected-category
-                                    ::entries]))
+                                    ::db-date-created
+                                    ::db-file-name
+                                    ::db-date-updated
+                                    ::entries
+                                    ::categories]))

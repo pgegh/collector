@@ -54,7 +54,7 @@
   [name & kvs]
   {:pre  [s/valid? :collector.core.specs/name name]
    :post [s/valid? :collector.core.specs/video]}
-  (let [movie {:name name}]
+  (let [video {:name name}]
     (if (empty? kvs)
-      movie
-      (apply assoc movie kvs))))
+      video
+      (apply assoc video kvs))))

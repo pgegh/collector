@@ -31,9 +31,9 @@ main : Program () Model Msg
 main =
     Browser.document
         { init = init
-        , view = view
-        , update = update
         , subscriptions = subscriptions
+        , update = update
+        , view = view
         }
 
 
@@ -42,30 +42,55 @@ main =
 
 
 type Model
-    = Loading
-    | StartPage StartPageData
-    | ErrorDBFileNames
-    | MainPage MainPageData
+    = ErrorDBFileNames
     | ErrorPage String
+    | Loading
+    | MainPage MainPageData
+    | StartPage StartPageData
 
 
 type alias StartPageData =
     { dbFileNames : FileNames
-    , selectedDBFile : String
     , newDBFileName : String
+    , selectedDBFile : String
+    }
+
+
+type alias MainPageReceivedData =
+    { category : String
+    , dbCreatedDate : String
+    , dbFileName : String
+    , dbModifiedDate : String
+    , entries : List Entry
+    , categories : List String
+    }
+
+
+type alias MainPageLocalData =
+    { state : MainPageState
+    , newID : String
+    , newName : String
+    , newCategory : String
     }
 
 
 type alias MainPageData =
-    { category : String
-    , entries : List Entry
+    { local : MainPageLocalData
+    , received : MainPageReceivedData
     }
 
 
+type MainPageState
+    = View
+    | Edit
+    | Add
+    | Delete
+
+
 type alias Entry =
-    { id : String
+    { category : String
+    , id : String
     , name : String
-    , category : String
     }
 
 
@@ -96,11 +121,16 @@ type Msg
     = CreateNewDB
     | GetFileNames
     | GotFileNames (Result Http.Error FileNames)
-    | GotMainPageData (Result Http.Error MainPageData)
+    | GotMainPageData (Result Http.Error MainPageReceivedData)
     | LoadDB
     | UpdateNewDBFileName String
     | UpdateSelectedCategory String
     | UpdateSelectedDBFileName String
+    | UpdateMainPageState MainPageState
+    | UpdateNewID String
+    | UpdateNewName String
+    | UpdateNewCategory String
+    | ApplyEntry
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -116,7 +146,7 @@ update msg model =
                         _ ->
                             ""
             in
-            ( MainPage { entries = [], category = "All" }, loadDB fileName )
+            ( Loading, loadDB fileName )
 
         GetFileNames ->
             ( Loading, loadFileNames )
@@ -140,8 +170,18 @@ update msg model =
                 Err _ ->
                     ( ErrorPage "Error in the loaded database!", Cmd.none )
 
-                Ok mainPageData ->
-                    ( MainPage mainPageData, Cmd.none )
+                Ok mainPageReceivedData ->
+                    ( MainPage
+                        { local =
+                            { state = View
+                            , newID = ""
+                            , newName = ""
+                            , newCategory = ""
+                            }
+                        , received = mainPageReceivedData
+                        }
+                    , Cmd.none
+                    )
 
         LoadDB ->
             let
@@ -153,7 +193,7 @@ update msg model =
                         _ ->
                             ""
             in
-            ( MainPage { entries = [], category = "All" }, loadDB fileName )
+            ( Loading, loadDB fileName )
 
         UpdateNewDBFileName fileName ->
             case model of
@@ -166,7 +206,19 @@ update msg model =
         UpdateSelectedCategory category ->
             case model of
                 MainPage mainPageData ->
-                    ( MainPage { mainPageData | category = category }, Cmd.none )
+                    let
+                        r =
+                            mainPageData.received
+
+                        l =
+                            mainPageData.local
+                    in
+                    ( MainPage
+                        { local = l
+                        , received = { r | category = category }
+                        }
+                    , Cmd.none
+                    )
 
                 _ ->
                     ( ErrorPage "Trying to change category when not in MainPage.", Cmd.none )
@@ -178,6 +230,117 @@ update msg model =
 
                 _ ->
                     ( ErrorPage "Trying to update selected database file name when not in StartPage.", Cmd.none )
+
+        UpdateMainPageState state ->
+            case model of
+                MainPage mainPageData ->
+                    let
+                        r =
+                            mainPageData.received
+
+                        l =
+                            mainPageData.local
+                    in
+                    ( MainPage
+                        { local = { l | state = state }
+                        , received = r
+                        }
+                    , Cmd.none
+                    )
+
+                _ ->
+                    ( ErrorPage "Trying to update main page state when not in MainPage.", Cmd.none )
+
+        UpdateNewID id ->
+            case model of
+                MainPage mainPageData ->
+                    let
+                        r =
+                            mainPageData.received
+
+                        l =
+                            mainPageData.local
+                    in
+                    ( MainPage
+                        { local = { l | newID = id }
+                        , received = r
+                        }
+                    , Cmd.none
+                    )
+
+                _ ->
+                    ( ErrorPage "Trying to update newID when not in MainPage.", Cmd.none )
+
+        UpdateNewName name ->
+            case model of
+                MainPage mainPageData ->
+                    let
+                        r =
+                            mainPageData.received
+
+                        l =
+                            mainPageData.local
+                    in
+                    ( MainPage
+                        { local = { l | newName = name }
+                        , received = r
+                        }
+                    , Cmd.none
+                    )
+
+                _ ->
+                    ( ErrorPage "Trying to update newName when not in MainPage.", Cmd.none )
+
+        UpdateNewCategory category ->
+            case model of
+                MainPage mainPageData ->
+                    let
+                        r =
+                            mainPageData.received
+
+                        l =
+                            mainPageData.local
+                    in
+                    ( MainPage
+                        { local = { l | newCategory = category }
+                        , received = r
+                        }
+                    , Cmd.none
+                    )
+
+                _ ->
+                    ( ErrorPage "Trying to update newCategory when not in MainPage.", Cmd.none )
+
+        ApplyEntry ->
+            case model of
+                MainPage mainPageData ->
+                    let
+                        r =
+                            mainPageData.received
+
+                        l =
+                            mainPageData.local
+                    in
+                    ( MainPage mainPageData
+                    , case l.newCategory of
+                        "Audio" ->
+                            Cmd.none
+
+                        "Book" ->
+                            Cmd.none
+
+                        "Game" ->
+                            Cmd.none
+
+                        "Video" ->
+                            addVideo l.newID l.newName
+
+                        _ ->
+                            Cmd.none
+                    )
+
+                _ ->
+                    ( ErrorPage "Trying to apply an add/edit action when not in MainPage.", Cmd.none )
 
 
 
@@ -248,22 +411,87 @@ view model =
         MainPage mainPageData ->
             { title = "Collector - Main Page"
             , body =
-                [ div []
+                [ div [ id "navigation" ]
                     [ select
-                        [ name "Categories" ]
-                        [ option [ value "All" ] [ text "All" ]
-                        , option [ value "Movies" ] [ text "Movies" ]
+                        [ name "Categories"
+                        , on "change" (JD.map UpdateSelectedCategory targetValue)
                         ]
+                        ([ option [ value "All" ] [ text "All" ]
+                         ]
+                            ++ List.map
+                                (\category ->
+                                    option [ value category ] [ text category ]
+                                )
+                                mainPageData.received.categories
+                        )
+                    , span []
+                        [ label [] [ text mainPageData.received.dbFileName ]
+                        , label [] [ text <| mainPageData.received.dbCreatedDate ++ " - " ++ mainPageData.received.dbModifiedDate ]
+                        ]
+                    , button [ onClick GetFileNames ] [ text "Start Page" ]
                     ]
-                , div []
-                    [ select
-                        [ name "Entries" ]
+                , div [ id "entries" ]
+                    [ h1 [] [ text mainPageData.received.category ]
+                    , select
+                        [ name "Entries"
+                        , size 20
+                        ]
                         (List.map
                             (\entry ->
                                 option [ value entry.id ] [ text entry.name ]
                             )
-                            mainPageData.entries
+                            mainPageData.received.entries
                         )
+                    ]
+                , div [ id "details" ]
+                    [ h1 [] [ text "Details" ]
+                    , div []
+                        [ button
+                            [ hidden (mainPageData.local.state /= Delete)
+                            , onClick (UpdateMainPageState View)
+                            ]
+                            [ text "Confirm Delete" ]
+                        , button
+                            [ hidden (mainPageData.local.state == View || mainPageData.local.state == Delete)
+                            , onClick ApplyEntry
+                            ]
+                            [ text "Apply" ]
+                        , button
+                            [ hidden (mainPageData.local.state /= View)
+                            , onClick (UpdateMainPageState Edit)
+                            ]
+                            [ text "Edit" ]
+                        , button
+                            [ hidden (mainPageData.local.state /= View)
+                            , onClick (UpdateMainPageState Add)
+                            ]
+                            [ text "Add New" ]
+                        , button
+                            [ hidden (mainPageData.local.state == View)
+                            , onClick (UpdateMainPageState View)
+                            ]
+                            [ text "Cancel" ]
+                        , button
+                            [ hidden (mainPageData.local.state /= View)
+                            , onClick (UpdateMainPageState Delete)
+                            ]
+                            [ text "Delete" ]
+                        ]
+                    , div [ hidden (mainPageData.local.state /= Add && mainPageData.local.state /= Edit) ]
+                        [ select
+                            [ name "New Category"
+                            , on "change" (JD.map UpdateNewCategory targetValue)
+                            ]
+                            [ option [ value "Audio" ] [ text "Audio" ]
+                            , option [ value "Book" ] [ text "Book" ]
+                            , option [ value "Game" ] [ text "Game" ]
+                            , option [ value "Video" ] [ text "Video" ]
+                            ]
+                        , label [] [ text "ID" ]
+                        , input [ type_ "text", on "change" (JD.map UpdateNewID targetValue) ] []
+                        , label [] [ text "Name" ]
+                        , input [ type_ "text", on "change" (JD.map UpdateNewName targetValue) ] []
+                        ]
                     ]
                 ]
             }
@@ -303,6 +531,15 @@ loadDB fileName =
         }
 
 
+addVideo : String -> String -> Cmd Msg
+addVideo id name =
+    Http.post
+        { url = baseUrl ++ "/add-video"
+        , body = Http.jsonBody <| JE.object [ ( "id", JE.string id ), ( "name", JE.string name ) ]
+        , expect = Http.expectJson GotMainPageData mainPageDataDecoder
+        }
+
+
 
 -- JSON
 
@@ -312,11 +549,15 @@ fileNameDecoder =
     JD.list JD.string
 
 
-mainPageDataDecoder : JD.Decoder MainPageData
+mainPageDataDecoder : JD.Decoder MainPageReceivedData
 mainPageDataDecoder =
-    JD.map2 MainPageData
-        (JD.field "category" JD.string)
+    JD.map6 MainPageReceivedData
+        (JD.field "selected-category" JD.string)
+        (JD.field "db-date-created" JD.string)
+        (JD.field "db-file-name" JD.string)
+        (JD.field "db-date-updated" JD.string)
         (JD.field "entries" entriesDecoder)
+        (JD.field "categories" (JD.list JD.string))
 
 
 entriesDecoder : JD.Decoder (List Entry)
@@ -327,9 +568,9 @@ entriesDecoder =
 entryDecoder : JD.Decoder Entry
 entryDecoder =
     JD.map3 Entry
+        (JD.field "category" JD.string)
         (JD.field "id" JD.string)
         (JD.field "name" JD.string)
-        (JD.field "category" JD.string)
 
 
 

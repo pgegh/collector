@@ -58,16 +58,17 @@
   [database]
   {:pre  [(s/valid? :collector.core.specs/database database)]
    :post [(s/valid? :collector.client-http.specs/client-db %)]}
-  {:category       "All"
-   :dbCreatedDate  (.format (SimpleDateFormat. "dd/MM/yyyy") (:date-created database))
-   :dbFileName     (:file-name database)
-   :dbModifiedDate (:date-modified database)
-   :entries        (get-entries database)
-   })
+  {:selected-category "All"
+   :db-date-created   (.format (SimpleDateFormat. "dd/MM/yyyy") (:date-created database))
+   :db-file-name      (:file-name database)
+   :db-date-updated   (.format (SimpleDateFormat. "dd/MM/yyyy") (:date-updated database))
+   :entries           (get-entries database)
+   :categories        (into [] (keys (:categories database)))})
 
-(defn movie->client-movie
-  [movie]
-  movie)
+
+(defn video->client-video
+  [video]
+  video)
 
 (defn filenames->client-filenames
   [filenames]

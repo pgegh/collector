@@ -20,7 +20,7 @@
   (:require [clojure.spec.alpha :as s]
             [clojure.data.json :refer [write-str]]
             [collector.client-http.mappers :refer [db->client-db
-                                                   movie->client-movie
+                                                   video->client-video
                                                    filenames->client-filenames]]
             [collector.core.core-api :refer [get-video]]
             [collector.persistence.persistence-api :refer [handle-event
@@ -39,24 +39,24 @@
                        (reset! database-atom (handle-event $)))]
     (time (write-str (db->client-db database)))))
 
-(defn add-movie!
-  [imdb-movie-id title]
-  (time (write-str (db->client-db (swap! database-atom #(handle-event % @database-file-name-atom {:type :add-movie
-                                                                                                  :args [imdb-movie-id title]}))))))
+(defn add-video!
+  [id name]
+  (time (write-str (db->client-db (swap! database-atom #(handle-event % @database-file-name-atom {:type :add-video
+                                                                                                  :args [id name]}))))))
 
-(defn remove-movie!
-  [imdb-movie-id]
-  (time (write-str (db->client-db (swap! database-atom #(handle-event % @database-file-name-atom {:type :remove-movie
-                                                                                                  :args [imdb-movie-id]}))))))
+(defn remove-video!
+  [id]
+  (time (write-str (db->client-db (swap! database-atom #(handle-event % @database-file-name-atom {:type :remove-video
+                                                                                                  :args [id]}))))))
 
-(defn update-movie!
-  [imdb-movie-id title]
-  (time (write-str (db->client-db (swap! database-atom #(handle-event % @database-file-name-atom {:type :update-movie
-                                                                                                  :args [imdb-movie-id :title title]}))))))
+(defn update-video!
+  [id name]
+  (time (write-str (db->client-db (swap! database-atom #(handle-event % @database-file-name-atom {:type :update-video
+                                                                                                  :args [id :name name]}))))))
 
-(defn get-movie!
-  [imdb-movie-id]
-  (time (write-str (movie->client-movie (get-video @database-atom imdb-movie-id)))))
+(defn get-video!
+  [id]
+  (time (write-str (video->client-video (get-video @database-atom id)))))
 
 (defn get-available-database-files!
   []
