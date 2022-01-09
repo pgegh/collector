@@ -18,23 +18,51 @@
 
 (ns collector.client-http.mappers
   (:require [clojure.spec.alpha :as s]
+            [clojure.test :refer [is]]
+            [collector.core.constructors :refer [create-initial-database]]
+            [collector.core.core-api :refer [add-video]]
             [collector.client-http.specs :refer :all]
-            [collector.core.specs :refer :all]))
+            [collector.core.specs :refer :all])
+  (:import (java.text SimpleDateFormat)))
+
+(defn get-entries
+  {:test (fn []
+           (is (= (get-entries (create-initial-database))
+                  []))
+           (let [database (-> (create-initial-database)
+                              (add-video "tt0000000" "test1")
+                              (add-video "tt0000001" "test2")
+                              (update-in [:categories :audios] #(assoc % "au0000000" {:name "test3"})))]
+             (is (some #{{:id "tt0000000" :name "test1" :category :videos}} (get-entries database)))
+             (is (some #{{:id "tt0000001" :name "test2" :category :videos}} (get-entries database)))
+             (is (some #{{:id "au0000000" :name "test3" :category :audios}} (get-entries database)))
+             ))}
+  [database]
+  {:pre  [(s/valid? :collector.core.specs/database database)]
+   :post [(s/valid? :collector.client-http.specs/entries %)]}
+  (let [categories (-> (:categories database)
+                       (keys))]
+    (reduce
+      (fn [acc category] (into acc (let [ids (-> (get-in database [:categories category])
+                                                 (keys))]
+                                     (reduce
+                                       (fn [acc id] (conj acc {:id       id
+                                                               :name     (get-in database [:categories category id :name])
+                                                               :category category}))
+                                       []
+                                       ids))))
+      []
+      categories)))
 
 (defn db->client-db
   [database]
   {:pre  [(s/valid? :collector.core.specs/database database)]
    :post [(s/valid? :collector.client-http.specs/client-db %)]}
-  {:category "All"
-   :entries  (if-not (and (:movies-db database)
-                          (> (count (:movies-db database)) 0))
-               []
-               (->> (get database :movies-db)
-                    (keys)
-                    (map (fn [key] {:id       key
-                                    :name     (get-in database [:movies-db key :title])
-                                    :category "Movies"}))
-                    (into [])))
+  {:category       "All"
+   :dbCreatedDate  (.format (SimpleDateFormat. "dd/MM/yyyy") (:date-created database))
+   :dbFileName     (:file-name database)
+   :dbModifiedDate (:date-modified database)
+   :entries        (get-entries database)
    })
 
 (defn movie->client-movie

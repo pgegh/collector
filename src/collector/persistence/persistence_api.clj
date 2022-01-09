@@ -34,14 +34,14 @@
            (is (s/valid? :collector.core.specs/database (handle-event "clojure__test.db")))
            (io/delete-file "clojure__test.db")
            (is (= (-> (handle-event "clojure__test.db")
-                      (handle-event "clojure__test.db" {:type :add-movie :args ["tt0000000" "test1"]})
-                      (handle-event "clojure__test.db" {:type :add-movie :args ["tt0000001" "test2"]})
-                      (handle-event "clojure__test.db" {:type :remove-movie :args ["tt0000001"]})
-                      (get :movies-db))
-                  {"tt0000000" {:title "test1"}}))
+                      (handle-event "clojure__test.db" {:type :add-video :args ["tt0000000" "test1"]})
+                      (handle-event "clojure__test.db" {:type :add-video :args ["tt0000001" "test2"]})
+                      (handle-event "clojure__test.db" {:type :remove-video :args ["tt0000001"]})
+                      (get-in [:categories :videos]))
+                  {"tt0000000" {:name "test1"}}))
            (is (= (-> (handle-event "clojure__test.db")
-                      (:movies-db))
-                  {"tt0000000" {:title "test1"}}))
+                      (get-in [:categories :videos]))
+                  {"tt0000000" {:name "test1"}}))
            (io/delete-file "clojure__test.db"))}
   ([database-file-name]
    {:pre  [(s/valid? :collector.persistence.specs/database-file-name database-file-name)]
@@ -49,8 +49,13 @@
    (if (.exists (io/file database-file-name))
      (load-database-file database-file-name)
      (let [date (now)
-           database (create-empty-database date)]
-       (spit database-file-name (str (pr-str date) " create-empty-database " (pr-str date) "\n"))
+           database (create-empty-database date database-file-name)]
+       (spit database-file-name (str (pr-str date)
+                                     " create-empty-database "
+                                     (pr-str date)
+                                     " "
+                                     (pr-str database-file-name)
+                                     "\n"))
        database)))
   ([database database-file-name event]
    {:pre  [(s/valid? :collector.core.specs/database database)
@@ -61,9 +66,9 @@
    (let [date (now)
          updated-database (assoc database :date-updated date)
          resulting-database (case (:type event)
-                              :add-movie (apply add-movie updated-database (:args event))
-                              :update-movie (apply update-movie updated-database (:args event))
-                              :remove-movie (apply remove-movie updated-database (:args event)))]
+                              :add-video (apply add-video updated-database (:args event))
+                              :update-video (apply update-video updated-database (:args event))
+                              :remove-video (apply remove-video updated-database (:args event)))]
      (persist-event database-file-name event date)
      resulting-database)))
 

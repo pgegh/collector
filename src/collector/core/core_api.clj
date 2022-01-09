@@ -21,99 +21,104 @@
             [collector.utils.auxiliary-functions :refer [error
                                                          error?
                                                          now]]
-            [collector.core.constructors :refer [create-movie
+            [collector.core.constructors :refer [create-video
                                                  create-initial-database]]))
 
 (defn create-empty-database
   "Creates a new empty database"
   {:test (fn []
-           (is (s/valid? :collector.core.specs/database (create-empty-database (now))))
-           (is (= (create-empty-database #inst"2021-12-26T22:07:05.047-00:00")
-                  {:date-created #inst"2021-12-26T22:07:05.047-00:00"})))}
-  [date]
-  {:pre  [(s/valid? :collector.core.specs/date date)]
+           (is (s/valid? :collector.core.specs/database (create-empty-database (now) "clojure__test.db")))
+           (is (= (create-empty-database #inst"2021-12-26T22:07:05.047-00:00" "clojure__test.db")
+                  {:date-created #inst"2021-12-26T22:07:05.047-00:00"
+                   :date-updated #inst"2021-12-26T22:07:05.047-00:00"
+                   :file-name    "clojure__test.db"
+                   :categories   {:audios    {}
+                                  :books     {}
+                                  :companies {}
+                                  :games     {}
+                                  :videos    {}
+                                  :persons   {}}})))}
+  [date filename]
+  {:pre  [(s/valid? :collector.core.specs/date date)
+          (s/valid? :collector.persistence.specs/database-file-name filename)]
    :post [(s/valid? :collector.core.specs/database %)]}
-  (create-initial-database date))
+  (create-initial-database date filename))
 
-(defn get-movie
-  "Returns the movie from tha database if it exists, otherwise nil."
+(defn get-video
+  "Returns the video from tha database if it exists, otherwise nil."
   {:test (fn []
-           (is (= (get-movie {:date-created (now)
-                              :movies-db    {"tt0000000" {:title "test"}}}
+           (is (= (get-video (-> (create-initial-database)
+                                 (update-in [:categories :videos] #(assoc % "tt0000000" {:name "test"})))
                              "tt0000000")
-                  {:title "test"}))
-           (is (nil? (get-movie {:date-created (now)
-                                 :movies-db    {}} "tt000000")))
-           (is (nil? (get-movie {:date-created (now)} "tt0000000"))))}
-  [database imdb-movie-id]
+                  {:name "test"}))
+           (is (nil? (get-video (create-initial-database) "tt000000"))))}
+  [database id]
   {:pre  [(s/valid? :collector.core.specs/database database)
-          (s/valid? :collector.core.specs/imdb-movie-id imdb-movie-id)]
-   :past [(or (s/valid? :collector.core.specs/movie %) (nil? %))]}
-  (get-in database [:movies-db imdb-movie-id]))
+          (s/valid? :video/id id)]
+   :past [(or (s/valid? :collector.core.specs/video %) (nil? %))]}
+  (get-in database [:categories :videos id]))
 
-(defn add-movie
-  "Adds a new movie to the state"
+(defn add-video
+  "Adds a new video to the state"
   {:test (fn []
-           (let [db (create-initial-database (now))]
-             (is (= (-> (add-movie db "tt0000000" "movie0")
-                        (get-in [:movies-db "tt0000000"]))
-                    {:title "movie0"}))
-             (is (= (-> (add-movie db "tt0000000" "movie0")
-                        (add-movie "tt0000001" "movie1")
-                        (get :movies-db))
-                    {"tt0000000" {:title "movie0"}
-                     "tt0000001" {:title "movie1"}}))
-             (is (error? #"^A movie with the same ID exists! ID:"
-                         #(-> (add-movie db "tt0000000" "movie0")
-                              (add-movie "tt0000000" "movie1"))))))}
-  ([database imdb-movie-id title & kvs]
+           (let [db (create-initial-database)]
+             (is (= (-> (add-video db "tt0000000" "video0")
+                        (get-in [:categories :videos "tt0000000"]))
+                    {:name "video0"}))
+             (is (= (-> (add-video db "tt0000000" "video0")
+                        (add-video "tt0000001" "video1")
+                        (get-in [:categories :videos]))
+                    {"tt0000000" {:name "video0"}
+                     "tt0000001" {:name "video1"}}))
+             (is (error? #"^A video with the same ID exists! ID:"
+                         #(-> (add-video db "tt0000000" "video0")
+                              (add-video "tt0000000" "video1"))))))}
+  ([database id name & kvs]
    {:pre  [(s/valid? :collector.core.specs/database database)
-           (s/valid? :collector.core.specs/imdb-movie-id imdb-movie-id)
-           (s/valid? :collector.core.specs/title title)]
+           (s/valid? :video/id id)
+           (s/valid? :collector.core.specs/name name)]
     :post [(s/valid? :collector.core.specs/database %)]}
-   (let [movie (apply create-movie title kvs)]
-     (if (:movies-db database)
-       (if (get-movie database imdb-movie-id)
-         (error "A movie with the same ID exists! ID:" imdb-movie-id)
-         (update database :movies-db #(assoc % imdb-movie-id movie)))
-       (assoc database :movies-db {imdb-movie-id movie})))))
+   (let [video (apply create-video name kvs)]
+     (if (get-video database id)
+       (error "A video with the same ID exists! ID:" id)
+       (update-in database [:categories :videos] #(assoc % id video))))))
 
-(defn update-movie
-  "Updates the information of a movie in the database with the provided values.
-   The movie must exist in the database. An updated database will be returned"
+(defn update-video
+  "Updates the information of a video in the database with the provided values.
+   The video must exist in the database. An updated database will be returned"
   {:test (fn []
            (is (= (-> (create-initial-database)
-                      (assoc :movies-db {"tt0000000" {:title "original"}})
-                      (update-movie "tt0000000" :title "updated" :original-title "updated")
-                      (get-movie "tt0000000"))
-                  {:title "updated" :original-title "updated"}))
-           (is (error? #"The movie you are trying to update does not exist in the database! Movie ID:"
+                      (update-in [:categories :videos] #(assoc % "tt0000000" {:name "original"}))
+                      (update-video "tt0000000" :name "updated" :original-title "updated")
+                      (get-video "tt0000000"))
+                  {:name "updated" :original-title "updated"}))
+           (is (error? #"The video you are trying to update does not exist in the database! Video ID:"
                        #(-> (create-initial-database)
-                            (update-movie "tt0000000" :title "updated")))))}
-  [database imdb-movie-id & kvs]
+                            (update-video "tt0000000" :name "updated")))))}
+  [database id & kvs]
   {:pre  [(s/valid? :collector.core.specs/database database)
-          (s/valid? :collector.core.specs/imdb-movie-id imdb-movie-id)]
+          (s/valid? :video/id id)]
    :post [(s/valid? :collector.core.specs/database %)]}
-  (if-not (get-movie database imdb-movie-id)
-    (error "The movie you are trying to update does not exist in the database! Movie ID:" imdb-movie-id)
-    (update-in database [:movies-db imdb-movie-id] #(apply assoc % kvs))))
+  (if-not (get-video database id)
+    (error "The video you are trying to update does not exist in the database! Video ID:" id)
+    (update-in database [:categories :videos id] #(apply assoc % kvs))))
 
-(defn remove-movie
-  "Removes the given movie from the database. The movie must exist in the database.
+(defn remove-video
+  "Removes the given video from the database. The video must exist in the database.
   The updated database will be returned"
   {:test (fn []
            (is (= (-> (create-initial-database)
-                      (assoc :movies-db {"tt0000000" {:title "test"}})
-                      (remove-movie "tt0000000")
-                      (get :movies-db))
+                      (update-in [:categories :videos] #(assoc % "tt0000000" {:name "test"}))
+                      (remove-video "tt0000000")
+                      (get-in [:categories :videos]))
                   {}))
-           (is (error? #"^The selected movie does not exist! Movie ID:"
+           (is (error? #"^The selected video does not exist! Video ID:"
                        #(-> (create-initial-database)
-                            (remove-movie "tt0000000")))))}
-  [database imdb-movie-id]
+                            (remove-video "tt0000000")))))}
+  [database id]
   {:pre  [(s/valid? :collector.core.specs/database database)
-          (s/valid? :collector.core.specs/imdb-movie-id imdb-movie-id)]
+          (s/valid? :video/id id)]
    :post [(s/valid? :collector.core.specs/database %)]}
-  (if (get-movie database imdb-movie-id)
-    (update database :movies-db #(dissoc % imdb-movie-id))
-    (error "The selected movie does not exist! Movie ID:" imdb-movie-id)))
+  (if (get-video database id)
+    (update-in database [:categories :videos] #(dissoc % id))
+    (error "The selected video does not exist! Video ID:" id)))

@@ -22,7 +22,7 @@
             [collector.client-http.mappers :refer [db->client-db
                                                    movie->client-movie
                                                    filenames->client-filenames]]
-            [collector.core.core-api :refer [get-movie]]
+            [collector.core.core-api :refer [get-video]]
             [collector.persistence.persistence-api :refer [handle-event
                                                            get-available-database-files]]))
 
@@ -56,7 +56,7 @@
 
 (defn get-movie!
   [imdb-movie-id]
-  (time (write-str (movie->client-movie (get-movie @database-atom imdb-movie-id)))))
+  (time (write-str (movie->client-movie (get-video @database-atom imdb-movie-id)))))
 
 (defn get-available-database-files!
   []

@@ -15,8 +15,4 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with json.  If not, see <https://www.gnu.org/licenses/>.
 
-(ns collector.core.core
-  (:require [clojure.test :refer [is]]
-            [clojure.spec.alpha :as s]
-            [collector.utils.auxiliary-functions :refer [now]]
-            [collector.core.constructors :refer [create-initial-database]]))
+(ns collector.core.core)

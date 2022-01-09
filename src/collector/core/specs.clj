@@ -25,7 +25,23 @@
 
 (s/def ::imdb-movie-id (s/and string?
                               #(re-find #"^tt[0-9]+$" %)))
-(s/def ::title string?)
+
+(s/def :audio/id (s/and string?
+                        #(re-find #"^au[0-9]{7}$" %)))
+(s/def :game/id (s/and string?
+                       #(re-find #"^gm[0-9]{7}$" %)))
+(s/def :book/id (s/and string?
+                       #(re-find #"^bk[0-9]{7}$" %)))
+(s/def :video/id (s/or :imdb ::imdb-movie-id
+                       :local (s/and string?
+                                     #(re-find #"^vd[0-9]{7}$" %))))
+(s/def :company/id (s/or :imdb ::imdb-company-id
+                         :local (s/and string?
+                                       #(re-find #"^cm[0-9]{7}$" %))))
+(s/def :person/id (s/or :imdb ::imdb-person-id
+                        :local (s/and string?
+                                      #(re-find #"^pr[0-9]{7}$" %))))
+
 (s/def ::name string?)
 (s/def ::birth ::date)
 (s/def ::original-title string?)
@@ -39,14 +55,14 @@
 (s/def ::plot string?)
 (s/def ::imdb-person-id (s/and string?
                                #(re-find #"^nm[0-9]+$" %)))
-(s/def ::directors (s/coll-of ::imdb-person-id :type set?))
-(s/def ::writers (s/coll-of ::imdb-person-id :type set?))
-(s/def ::stars (s/coll-of ::imdb-person-id :type set?))
-(s/def ::actors (s/coll-of ::imdb-person-id :type set?))
+(s/def ::directors (s/coll-of :person/id :type set?))
+(s/def ::writers (s/coll-of :person/id :type set?))
+(s/def ::stars (s/coll-of :person/id :type set?))
+(s/def ::actors (s/coll-of :person/id :type set?))
 (s/def ::genres string?)
 (s/def ::imdb-company-id (s/and string?
                                 #(re-find #"^co[0-9]+$" %)))
-(s/def ::companies (s/coll-of ::imdb-company-id :type set?))
+(s/def ::companies (s/coll-of :company/id :type set?))
 (s/def ::country string?)
 (s/def ::countries (s/coll-of ::country :type set?))
 (s/def ::language string?)
@@ -55,12 +71,12 @@
 (s/def ::gender #{:male :female})
 (s/def ::established ::date)
 (s/def ::occupation string?)
-(s/def ::person (s/keys :req-un [::name]
+(s/def ::person (s/keys :req-un [:person/name]
                         :opt-un [::gender
                                  ::birth
                                  ::occupation
                                  ::nationality]))
-(s/def ::persons-db (s/map-of ::imdb-person-id ::person))
+(s/def :database/persons (s/map-of :person/id ::person))
 (s/def ::content-rating string?)
 (s/def ::imdb-rating (s/and float?
                             #(<= 0.0 %)
@@ -68,7 +84,7 @@
 (s/def ::imdb-number-of-votes (s/and int? pos?))
 
 
-(s/def ::movie (s/keys :req-un [::title]
+(s/def ::video (s/keys :req-un [::name]
                        :opt-un [::original-title
                                 ::type
                                 ::year
@@ -87,17 +103,24 @@
                                 ::content-rating
                                 ::imdb-rating
                                 ::imdb-number-of-votes]))
-(s/def ::movies-db (s/map-of ::imdb-movie-id ::movie))
+(s/def :database/videos (s/map-of :video/id ::video))
 (s/def ::date-updated ::date)
 
 
 (s/def ::company (s/keys :req-un [::name]
                          :opt-un [::established
                                   ::nationality]))
-(s/def ::companies-db (s/map-of ::imdb-company-id ::company))
+(s/def :database/companies (s/map-of :company/id ::company))
 
-(s/def ::database (s/keys :req-un [::date-created]
-                          :opt-un [::date-updated
-                                   ::movies-db
-                                   ::persons-db
-                                   ::companies-db]))
+(s/def :main/categories (s/keys :req-un [:database/audios
+                                         :database/books
+                                         :database/companies
+                                         :database/games
+                                         :database/videos
+                                         :database/persons
+                                         ]))
+
+(s/def ::database (s/keys :req-un [::date-created
+                                   ::date-updated
+                                   ::file-name
+                                   :main/categories]))

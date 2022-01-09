@@ -23,29 +23,38 @@
 (defn create-initial-database
   "Creates an empty state for the entire application"
   {:test (fn []
-           (is (s/valid? :collector.core.specs/database (create-initial-database (now))))
+           (is (s/valid? :collector.core.specs/database (create-initial-database (now) "clojure__test.db")))
            (is (s/valid? :collector.core.specs/database (create-initial-database))))}
   ([]
    {:post [s/valid? :collector.core.specs/date %]}
-   (create-initial-database (now)))
-  ([date]
-   {:pre  [s/valid? :collector.core.specs/date date]
+   (create-initial-database (now) "clojure__test.db"))
+  ([date filename]
+   {:pre  [(s/valid? :collector.core.specs/date date)
+           (s/valid? :collector.persistence.specs/database-file-name filename)]
     :post [s/valid? :collector.core.specs/database %]}
-   {:date-created date}))
+   {:date-created date
+    :date-updated date
+    :file-name    filename
+    :categories   {:audios    {}
+                   :books     {}
+                   :companies {}
+                   :games     {}
+                   :videos    {}
+                   :persons   {}}}))
 
-(defn create-movie
-  "Creates a movie element"
+(defn create-video
+  "Creates a video entry"
   {:test (fn []
-           (is (= (create-movie "movie-title")
-                  {:title "movie-title"}))
-           (is (= (create-movie "movie-title"
+           (is (= (create-video "video-name")
+                  {:name "video-name"}))
+           (is (= (create-video "video-name"
                                 :year 1994)
-                  {:title "movie-title"
-                   :year  1994})))}
-  [title & kvs]
-  {:pre  [s/valid? :collector.core.specs/title title]
-   :post [s/valid? :collector.core.specs/movie]}
-  (let [movie {:title title}]
+                  {:name "video-name"
+                   :year 1994})))}
+  [name & kvs]
+  {:pre  [s/valid? :collector.core.specs/name name]
+   :post [s/valid? :collector.core.specs/video]}
+  (let [movie {:name name}]
     (if (empty? kvs)
       movie
       (apply assoc movie kvs))))

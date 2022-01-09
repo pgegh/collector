@@ -1,5 +1,6 @@
 (ns collector.all
   (:require [clojure.test :refer :all]
+            [collector.client-http.mappers]
             [collector.core.constructors]
             [collector.core.core]
             [collector.core.core-api]
