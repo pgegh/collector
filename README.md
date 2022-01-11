@@ -4,6 +4,8 @@
 
 A Clojure application used for storing information of digital media.
 
+This project is a sandbox for me to learn Clojure and Elm.
+
 ## Usage
 
 TODO
