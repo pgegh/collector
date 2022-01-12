@@ -43,8 +43,7 @@ type alias Model =
 
 
 type Page
-    = NotFoundPage
-    | LoadingPage Loading.Model
+    = LoadingPage Loading.Model
 
 
 init : () -> ( Model, Cmd Msg )
@@ -90,14 +89,6 @@ view model =
 currentView : Model -> Html Msg
 currentView model =
     case model.page of
-        NotFoundPage ->
-            notFoundView
-
         LoadingPage pageModel ->
             Loading.view pageModel
                 |> Html.map LoadingPageMsg
-
-
-notFoundView : Html msg
-notFoundView =
-    h3 [] [ text "Page NoT Found!" ]
