@@ -12,7 +12,7 @@ TODO
 
 ## License
 
-Copyright © 2021 Hovig Manjikian
+Copyright © 2021-2022 Hovig Manjikian
 
 This file is part of collector.
 

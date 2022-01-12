@@ -1,4 +1,4 @@
--- Copyright © 2021 Hovig Manjikian
+-- Copyright © 2021-2022 Hovig Manjikian
 --
 -- This file is part of collector.
 --
@@ -14,6 +14,7 @@
 --
 -- You should have received a copy of the GNU General Public License
 -- along with json.  If not, see <https://www.gnu.org/licenses/>.
+
 
 module Page.Loading exposing (Model, Msg, initModel, update, view)
 
@@ -43,7 +44,8 @@ type Msg
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update _ model =
-    (model, Cmd.none)
+    ( model, Cmd.none )
+
 
 
 -- VIEW
