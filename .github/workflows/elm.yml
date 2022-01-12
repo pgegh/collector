@@ -27,6 +27,7 @@ jobs:
           elm-version: 0.19.1
       - name: Build the front-end 
         run: |
+          ls
           cd src/collector/elm-frontend
           elm make src/Main.elm
       
