@@ -20,7 +20,7 @@ module Main exposing (main)
 
 import Browser exposing (Document)
 import Html exposing (..)
-import Page.Start as Start exposing (Model)
+import Page.Start as Start
 
 
 main : Program () Model Msg
@@ -37,9 +37,11 @@ main =
 -- MODEL
 
 
-type alias Model =
-    { page : Page
-    }
+type Model
+    = MainModel
+        { page : Page
+        }
+    | ImpossibleStateReached
 
 
 type Page
@@ -56,7 +58,7 @@ init _ =
             in
             ( StartPage pageModel, Cmd.map StartPageMsg pageCmds )
     in
-    ( { page = startPage }, mappedPageCmds )
+    ( MainModel { page = startPage }, mappedPageCmds )
 
 
 
@@ -69,15 +71,24 @@ type Msg
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    case ( msg, model.page ) of
-        ( StartPageMsg subMsg, StartPage pageModel ) ->
-            let
-                ( updatedPageModel, pageCmd ) =
-                    Start.update subMsg pageModel
-            in
-            ( { model | page = StartPage updatedPageModel }
-            , Cmd.map StartPageMsg pageCmd
-            )
+    case model of
+        MainModel m ->
+            case ( msg, m.page ) of
+                ( StartPageMsg subMsg, StartPage pageModel ) ->
+                    let
+                        ( updatedPageModel, pageCmd ) =
+                            Start.update subMsg pageModel
+                    in
+                    if Start.isDBLoaded updatedPageModel then
+                        ( ImpossibleStateReached, Cmd.none )
+
+                    else
+                        ( MainModel { m | page = StartPage updatedPageModel }
+                        , Cmd.map StartPageMsg pageCmd
+                        )
+
+        ImpossibleStateReached ->
+            ( model, Cmd.none )
 
 
 
@@ -86,14 +97,23 @@ update msg model =
 
 view : Model -> Document Msg
 view model =
-    { title = "Collector"
-    , body = [ currentView model ]
-    }
+    case model of
+        MainModel m ->
+            { title = "Collector"
+            , body = [ currentView m.page ]
+            }
+
+        ImpossibleStateReached ->
+            { title = "Collector"
+            , body =
+                [ h1 [] [ text "Impossible State Reached!" ]
+                ]
+            }
 
 
-currentView : Model -> Html Msg
-currentView model =
-    case model.page of
+currentView : Page -> Html Msg
+currentView page =
+    case page of
         StartPage pageModel ->
             Start.view pageModel
                 |> Html.map StartPageMsg

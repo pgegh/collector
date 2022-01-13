@@ -16,8 +16,9 @@
 -- along with json.  If not, see <https://www.gnu.org/licenses/>.
 
 
-module Page.Start exposing (Model, Msg, init, update, view)
+module Page.Start exposing (Model, Msg, init, isDBLoaded, update, view)
 
+import DB exposing (DB)
 import FileName exposing (FileName)
 import FileNames exposing (FileNames)
 import Html exposing (..)
@@ -26,6 +27,7 @@ import Html.Events exposing (..)
 import Http
 import HttpSettings
 import Json.Decode as JD
+import Json.Encode as JE
 
 
 
@@ -37,8 +39,9 @@ type Model
         { dbFileNames : FileNamesState
         , newDBFileName : Maybe FileName
         , selectedDBFileName : Maybe FileName
+        , db : DBState
         }
-    | ImpossibleStateReached
+    | InvalidStateReached
 
 
 type FileNamesState
@@ -47,12 +50,20 @@ type FileNamesState
     | FailedGettingFileNames
 
 
+type DBState
+    = GetDBSuccess DB
+    | GettingDB
+    | FailedGettingDB
+    | NoDB
+
+
 init : ( Model, Cmd Msg )
 init =
     ( Start
         { dbFileNames = GettingFileNames
         , newDBFileName = Nothing
         , selectedDBFileName = Nothing
+        , db = NoDB
         }
     , getFileNames
     )
@@ -67,7 +78,9 @@ type Msg
     | RefreshFileNames
     | UpdateSelectedDBFileName FileName
     | UpdateNewDBFileName FileName
-    | LoadDB
+    | GetDB FileName
+    | GotDB (Result Http.Error DB)
+    | LoadMainPage
     | CreateNewDB
 
 
@@ -104,9 +117,22 @@ update msg model =
             , Cmd.none
             )
 
+        ( GetDB fileName, Start m ) ->
+            ( Start { m | db = GettingDB }
+            , getDB fileName
+            )
+
+        ( GotDB result, Start m ) ->
+            case result of
+                Err _ ->
+                    ( Start { m | db = FailedGettingDB }, Cmd.none )
+
+                Ok db ->
+                    ( Start { m | db = GetDBSuccess db }, Cmd.none )
+
         -- DoNothing/Impossible state
         ( _, _ ) ->
-            ( ImpossibleStateReached, Cmd.none )
+            ( InvalidStateReached, Cmd.none )
 
 
 
@@ -126,15 +152,9 @@ view model =
                             label [] [ text "Loading" ]
 
                         GotFileNames fileNames ->
-                            select
-                                [ name "Available databases"
-                                , size 10
-                                , on "change" (JD.map UpdateSelectedDBFileName FileName.decoder)
-                                ]
+                            div []
                                 (List.map
-                                    (\fileName ->
-                                        option [ value fileName ] [ text fileName ]
-                                    )
+                                    (fileNameToLabel m.selectedDBFileName)
                                     (FileNames.getAll fileNames)
                                 )
 
@@ -144,9 +164,13 @@ view model =
                         [ onClick RefreshFileNames ]
                         [ text "Refresh" ]
                     , button
-                        [ onClick LoadDB
-                        , disabled (not (isDBFileSelected model))
-                        ]
+                        (case m.selectedDBFileName of
+                            Nothing ->
+                                [ disabled True ]
+
+                            Just fileName ->
+                                [ onClick (GetDB fileName) ]
+                        )
                         [ text "Load Selected Database" ]
                     ]
                 , div []
@@ -158,25 +182,42 @@ view model =
                     [ p [] [ text "To delete an existing database, delete the file from the file-system." ] ]
                 ]
 
-        ImpossibleStateReached ->
+        InvalidStateReached ->
             div []
                 [ h1 [] [ text "Impossible State Reached!" ]
                 ]
+
+
+fileNameToLabel : Maybe FileName -> FileName -> Html Msg
+fileNameToLabel selectedDBFileName fileName =
+    div []
+        [ label
+            [ onClick (UpdateSelectedDBFileName fileName)
+            , class
+                (if selectedDBFileName == Just fileName then
+                    "Selected"
+
+                 else
+                    "NotSelected"
+                )
+            ]
+            [ text <| FileName.getString fileName ]
+        ]
 
 
 
 -- Getters
 
 
-isDBFileSelected : Model -> Bool
-isDBFileSelected model =
+isDBLoaded : Model -> Bool
+isDBLoaded model =
     case model of
         Start m ->
-            case m.selectedDBFileName of
-                Just _ ->
+            case m.db of
+                GetDBSuccess _ ->
                     True
 
-                Nothing ->
+                _ ->
                     False
 
         _ ->
@@ -207,4 +248,13 @@ getFileNames =
     Http.get
         { url = HttpSettings.baseUrl ++ "/get-available-database-files"
         , expect = Http.expectJson UpdateFileNames FileNames.decoder
+        }
+
+
+getDB : FileName -> Cmd Msg
+getDB fileName =
+    Http.post
+        { url = HttpSettings.baseUrl ++ "/load-database"
+        , body = Http.jsonBody <| JE.object [ ( "database-file-name", FileName.encoder fileName ) ]
+        , expect = Http.expectJson GotDB DB.decoder
         }

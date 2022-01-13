@@ -16,7 +16,7 @@
 -- along with json.  If not, see <https://www.gnu.org/licenses/>.
 
 
-module FileName exposing (FileName, decoder, encoder, getString)
+module FileName exposing (FileName, decoder, encoder, getString, init)
 
 import Json.Decode as JD
 import Json.Encode as JE
@@ -24,6 +24,11 @@ import Json.Encode as JE
 
 type FileName
     = FileName String
+
+
+init : FileName
+init =
+    FileName ""
 
 
 

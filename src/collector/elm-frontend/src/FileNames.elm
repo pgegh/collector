@@ -18,13 +18,13 @@
 
 module FileNames exposing (FileNames, decoder, encoder, getAll, init)
 
-import FileName
+import FileName exposing (FileName)
 import Json.Decode as JD
 import Json.Encode as JE
 
 
 type FileNames
-    = FileNames (List FileName.FileName)
+    = FileNames (List FileName)
 
 
 init : FileNames
@@ -36,9 +36,9 @@ init =
 -- Getters
 
 
-getAll : FileNames -> List String
+getAll : FileNames -> List FileName
 getAll (FileNames fileNames) =
-    List.map (\name -> FileName.getString name) fileNames
+    fileNames
 
 
 
