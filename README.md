@@ -1,5 +1,7 @@
 [![Clojure CI](https://github.com/pgegh/collector/actions/workflows/clojure.yml/badge.svg)](https://github.com/pgegh/collector/actions/workflows/clojure.yml)
 
+[![Elm-CI](https://github.com/pgegh/collector/actions/workflows/elm.yml/badge.svg)](https://github.com/pgegh/collector/actions/workflows/elm.yml)
+
 # collector
 
 A Clojure application used for storing information of digital media.
