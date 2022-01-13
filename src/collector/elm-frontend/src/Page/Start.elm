@@ -80,7 +80,6 @@ type Msg
     | UpdateNewDBFileName FileName
     | GetDB FileName
     | GotDB (Result Http.Error DB)
-    | LoadMainPage
     | CreateNewDB
 
 
@@ -130,6 +129,19 @@ update msg model =
                 Ok db ->
                     ( Start { m | db = GetDBSuccess db }, Cmd.none )
 
+        ( CreateNewDB, Start m ) ->
+            ( Start { m | db = GettingDB }
+            , getDB
+                (case m.newDBFileName of
+                    Just fileName ->
+                        fileName
+
+                    -- todo: unnecessary impossible case 
+                    Nothing ->
+                        FileName.init
+                )
+            )
+
         -- DoNothing/Impossible state
         ( _, _ ) ->
             ( InvalidStateReached, Cmd.none )
@@ -175,7 +187,7 @@ view model =
                     ]
                 , div []
                     [ h2 [] [ text "Create a new database" ]
-                    , input [ type_ "text", on "change" (JD.map UpdateNewDBFileName FileName.decoder) ] []
+                    , input [ type_ "text", on "change" (JD.map UpdateNewDBFileName (JD.at [ "target", "value" ] FileName.decoder)) ] []
                     , button [ onClick CreateNewDB, disabled (not (isNewDBFileName model)) ] [ text "Create" ]
                     ]
                 , div []
