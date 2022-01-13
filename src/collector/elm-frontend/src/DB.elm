@@ -9,7 +9,7 @@ type alias DB =
     { fileName : FileName
     , dbCreatedDate : String
     , dbUpdatedDate : String
-    , catagories : List String
+    , categories : List String
     , selectedCategory : String
     , entries : List Entry
     }
