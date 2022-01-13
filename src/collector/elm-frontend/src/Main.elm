@@ -20,7 +20,7 @@ module Main exposing (main)
 
 import Browser exposing (Document)
 import Html exposing (..)
-import Page.Start as Start
+import Page.Start as Start exposing (Model)
 
 
 main : Program () Model Msg

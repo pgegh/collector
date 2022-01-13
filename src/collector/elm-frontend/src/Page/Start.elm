@@ -34,22 +34,23 @@ import Json.Decode as JD
 
 type Model
     = Start
-        { dbFileNames : FileNames
+        { dbFileNames : FileNamesState
         , newDBFileName : Maybe FileName
         , selectedDBFileName : Maybe FileName
         }
-    | Loading
-        { dbFileNames : FileNames
-        , newDBFileName : Maybe FileName
-        , selectedDBFileName : Maybe FileName
-        }
-    | RetryGettingFileNames
+    | ImpossibleStateReached
+
+
+type FileNamesState
+    = GotFileNames FileNames
+    | GettingFileNames
+    | FailedGettingFileNames
 
 
 init : ( Model, Cmd Msg )
 init =
-    ( Loading
-        { dbFileNames = FileNames.init
+    ( Start
+        { dbFileNames = GettingFileNames
         , newDBFileName = Nothing
         , selectedDBFileName = Nothing
         }
@@ -73,20 +74,25 @@ type Msg
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case ( msg, model ) of
-        ( UpdateFileNames result, Loading m ) ->
+        ( UpdateFileNames result, Start m ) ->
             case result of
                 Err _ ->
-                    ( RetryGettingFileNames, Cmd.none )
+                    ( Start
+                        { m | dbFileNames = FailedGettingFileNames }
+                    , Cmd.none
+                    )
 
                 Ok dbFileNames ->
                     ( Start
-                        { m | dbFileNames = dbFileNames }
+                        { m | dbFileNames = GotFileNames dbFileNames }
                     , Cmd.none
                     )
 
         -- todo: Show spinner
         ( RefreshFileNames, Start m ) ->
-            ( Start m, getFileNames )
+            ( Start { m | dbFileNames = GettingFileNames }
+            , getFileNames
+            )
 
         ( UpdateSelectedDBFileName fileName, Start m ) ->
             ( Start { m | selectedDBFileName = Just fileName }
@@ -98,9 +104,9 @@ update msg model =
             , Cmd.none
             )
 
-        -- DoNothing/Imposible state
+        -- DoNothing/Impossible state
         ( _, _ ) ->
-            ( model, Cmd.none )
+            ( ImpossibleStateReached, Cmd.none )
 
 
 
@@ -110,27 +116,30 @@ update msg model =
 view : Model -> Html Msg
 view model =
     case model of
-        Loading _ ->
-            div []
-                [ h1 [] [ text "Loading..." ]
-                ]
-
         Start m ->
             div []
                 [ h1 [] [ text "COLLECTOR" ]
                 , div []
                     [ h2 [] [ text "Select a database" ]
-                    , select
-                        [ name "Available databases"
-                        , size 10
-                        , on "change" (JD.map UpdateSelectedDBFileName FileName.decoder)
-                        ]
-                        (List.map
-                            (\fileName ->
-                                option [ value fileName ] [ text fileName ]
-                            )
-                            (FileNames.getAll m.dbFileNames)
-                        )
+                    , case m.dbFileNames of
+                        GettingFileNames ->
+                            label [] [ text "Loading" ]
+
+                        GotFileNames fileNames ->
+                            select
+                                [ name "Available databases"
+                                , size 10
+                                , on "change" (JD.map UpdateSelectedDBFileName FileName.decoder)
+                                ]
+                                (List.map
+                                    (\fileName ->
+                                        option [ value fileName ] [ text fileName ]
+                                    )
+                                    (FileNames.getAll fileNames)
+                                )
+
+                        FailedGettingFileNames ->
+                            label [] [ text "Could not retrieve file names from the server" ]
                     , button
                         [ onClick RefreshFileNames ]
                         [ text "Refresh" ]
@@ -149,9 +158,9 @@ view model =
                     [ p [] [ text "To delete an existing database, delete the file from the file-system." ] ]
                 ]
 
-        RetryGettingFileNames ->
+        ImpossibleStateReached ->
             div []
-                [ h1 [] [ text "Retry..." ]
+                [ h1 [] [ text "Impossible State Reached!" ]
                 ]
 
 
