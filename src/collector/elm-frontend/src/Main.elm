@@ -20,7 +20,7 @@ module Main exposing (main)
 
 import Browser exposing (Document)
 import Html exposing (..)
-import Page.Loading as Loading exposing (Model)
+import Page.Start as Start
 
 
 main : Program () Model Msg
@@ -43,12 +43,20 @@ type alias Model =
 
 
 type Page
-    = LoadingPage Loading.Model
+    = StartPage Start.Model
 
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { page = LoadingPage Loading.initModel }, Cmd.none )
+    let
+        ( startPage, mappedPageCmds ) =
+            let
+                ( pageModel, pageCmds ) =
+                    Start.init
+            in
+            ( StartPage pageModel, Cmd.map StartPageMsg pageCmds )
+    in
+    ( { page = startPage }, mappedPageCmds )
 
 
 
@@ -56,23 +64,20 @@ init _ =
 
 
 type Msg
-    = LoadingPageMsg Loading.Msg
+    = StartPageMsg Start.Msg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case ( msg, model.page ) of
-        ( LoadingPageMsg subMsg, LoadingPage pageModel ) ->
+        ( StartPageMsg subMsg, StartPage pageModel ) ->
             let
-                ( updatedPageModel, updatedCmd ) =
-                    Loading.update subMsg pageModel
+                ( updatedPageModel, pageCmd ) =
+                    Start.update subMsg pageModel
             in
-            ( { model | page = LoadingPage updatedPageModel }
-            , Cmd.map LoadingPageMsg updatedCmd
+            ( { model | page = StartPage updatedPageModel }
+            , Cmd.map StartPageMsg pageCmd
             )
-
-        ( _, _ ) ->
-            ( model, Cmd.none )
 
 
 
@@ -89,6 +94,6 @@ view model =
 currentView : Model -> Html Msg
 currentView model =
     case model.page of
-        LoadingPage pageModel ->
-            Loading.view pageModel
-                |> Html.map LoadingPageMsg
+        StartPage pageModel ->
+            Start.view pageModel
+                |> Html.map StartPageMsg

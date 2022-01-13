@@ -16,44 +16,9 @@
 -- along with json.  If not, see <https://www.gnu.org/licenses/>.
 
 
-module Page.Loading exposing (Model, Msg, initModel, update, view)
-
-import Html exposing (..)
+module HttpSettings exposing (baseUrl)
 
 
-
--- MODEL
-
-
-type Model
-    = Model String
-
-
-initModel : Model
-initModel =
-    Model "Initializing!"
-
-
-
--- UPDATE
-
-
-type Msg
-    = NoOp
-
-
-update : Msg -> Model -> ( Model, Cmd Msg )
-update _ model =
-    ( model, Cmd.none )
-
-
-
--- VIEW
-
-
-view : Model -> Html Msg
-view (Model str) =
-    div []
-        [ h1 [] [ text "Loading..." ]
-        , p [] [ text str ]
-        ]
+baseUrl : String
+baseUrl =
+    "http://localhost:8001"
