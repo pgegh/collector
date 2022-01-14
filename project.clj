@@ -6,4 +6,5 @@
   :dependencies [[org.clojure/clojure "1.10.3"]
                  [org.clojure/data.json "2.4.0"]
                  [http-kit "2.5.3"]]
-  :repl-options {:init-ns collector.core.core})
+  :repl-options {:init-ns collector.core.core}
+  :main collector.client-http.server/start-server!)

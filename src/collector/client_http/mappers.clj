@@ -19,6 +19,7 @@
 (ns collector.client-http.mappers
   (:require [clojure.spec.alpha :as s]
             [clojure.test :refer [is]]
+            [collector.persistence.specs :refer :all]
             [collector.core.constructors :refer [create-initial-database]]
             [collector.core.core-api :refer [add-video]]
             [collector.client-http.specs :refer :all]
