@@ -1,4 +1,4 @@
-module DB exposing (DB, decoder)
+module DB exposing (DB, decoder, init)
 
 import Entry exposing (Entry)
 import FileName exposing (FileName)
@@ -12,6 +12,21 @@ type alias DB =
     , categories : List String
     , selectedCategory : String
     , entries : List Entry
+    }
+
+
+
+-- todo: Unnecessary function
+
+
+init : DB
+init =
+    { fileName = FileName.init
+    , dbCreatedDate = ""
+    , dbUpdatedDate = ""
+    , categories = []
+    , selectedCategory = ""
+    , entries = []
     }
 
 

@@ -16,7 +16,7 @@
 -- along with json.  If not, see <https://www.gnu.org/licenses/>.
 
 
-module Page.Start exposing (Model, Msg, init, isDBLoaded, update, view)
+module Page.Start exposing (Model, Msg, getLoadedDB, init, isDBLoaded, update, view)
 
 import DB exposing (DB)
 import FileName exposing (FileName)
@@ -136,7 +136,7 @@ update msg model =
                     Just fileName ->
                         fileName
 
-                    -- todo: unnecessary impossible case 
+                    -- todo: unnecessary impossible case
                     Nothing ->
                         FileName.init
                 )
@@ -234,6 +234,23 @@ isDBLoaded model =
 
         _ ->
             False
+
+
+getLoadedDB : Model -> DB
+getLoadedDB model =
+    case model of
+        Start m ->
+            case m.db of
+                GetDBSuccess db ->
+                    db
+
+                -- todo: unnecessary branch
+                _ ->
+                    DB.init
+
+        -- todo: unnecessary branch
+        _ ->
+            DB.init
 
 
 isNewDBFileName : Model -> Bool

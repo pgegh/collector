@@ -20,6 +20,7 @@ module Main exposing (main)
 
 import Browser exposing (Document)
 import Html exposing (..)
+import Page.Home as Home
 import Page.Start as Start
 
 
@@ -46,6 +47,7 @@ type Model
 
 type Page
     = StartPage Start.Model
+    | HomePage Home.Model
 
 
 init : () -> ( Model, Cmd Msg )
@@ -67,6 +69,7 @@ init _ =
 
 type Msg
     = StartPageMsg Start.Msg
+    | HomePageMsg Home.Msg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -80,12 +83,31 @@ update msg model =
                             Start.update subMsg pageModel
                     in
                     if Start.isDBLoaded updatedPageModel then
-                        ( ImpossibleStateReached, Cmd.none )
+                        ( MainModel
+                            { page = HomePage <| Home.init (Start.getLoadedDB updatedPageModel) }
+                        , Cmd.none
+                        )
 
                     else
                         ( MainModel { m | page = StartPage updatedPageModel }
                         , Cmd.map StartPageMsg pageCmd
                         )
+
+                ( HomePageMsg subMsg, HomePage pageModel ) ->
+                    let
+                        ( updatedPageModel, pageCmd ) =
+                            Home.update subMsg pageModel
+                    in
+                    if Home.isChangeDB updatedPageModel then
+                        ( ImpossibleStateReached, Cmd.none )
+
+                    else
+                        ( MainModel { m | page = HomePage updatedPageModel }
+                        , Cmd.map HomePageMsg pageCmd
+                        )
+
+                ( _, _ ) ->
+                    ( ImpossibleStateReached, Cmd.none )
 
         ImpossibleStateReached ->
             ( model, Cmd.none )
@@ -117,3 +139,7 @@ currentView page =
         StartPage pageModel ->
             Start.view pageModel
                 |> Html.map StartPageMsg
+
+        HomePage pageModel ->
+            Home.view pageModel
+                |> Html.map HomePageMsg
