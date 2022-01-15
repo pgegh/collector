@@ -6,6 +6,8 @@ import FileName
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+import Http
+import HttpSettings exposing (baseUrl)
 import Json.Decode as JD
 
 
@@ -26,40 +28,34 @@ type alias Model =
 
 type EntryData
     = Audio
-        { id : String
-        , name : String
-        , singer : String
+        { name : String
+        , artists : List String
         , year : Int
-        , language : String
-        , country : String
+        , languages : List String
         , genre : String
         }
     | Book
-        { id : String
-        , name : String
-        , author : String
+        { name : String
+        , authors : List String
+        , publisher : String
         , year : Int
         , language : String
-        , country : String
-        , category : String
+        , categories : List String
         }
     | Game
-        { id : String
-        , name : String
+        { name : String
         , year : Int
-        , company : String
+        , companies : List String
         , platform : String
-        , country : String
-        , genre : String
+        , genres : List String
         }
     | Video
-        { id : String
-        , name : String
+        { name : String
         , originalTitle : String
         , year : Int
-        , language : String
-        , country : String
-        , genre : String
+        , languages : List String
+        , countries : List String
+        , genres : List String
         }
 
 
@@ -97,6 +93,7 @@ type Msg
     | ChangeDB
     | UpdateState HomeState
     | UpdateNewEntryCategory String
+    | GotEntryData (Result Http.Error EntryData)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -106,7 +103,7 @@ update msg model =
             ( { model | selectedCategory = category }, Cmd.none )
 
         UpdateSelectedEntry entry ->
-            ( { model | selectedEntry = Just entry }, Cmd.none )
+            ( { model | selectedEntry = Just entry }, getSelectedEntryData entry )
 
         ChangeDB ->
             ( { model | changeDB = True }, Cmd.none )
@@ -121,51 +118,53 @@ update msg model =
                         (case category of
                             "Audio" ->
                                 Audio
-                                    { id = ""
-                                    , name = ""
-                                    , singer = ""
+                                    { name = ""
+                                    , artists = []
                                     , year = 0
-                                    , language = ""
-                                    , country = ""
+                                    , languages = []
                                     , genre = ""
                                     }
 
                             "Book" ->
                                 Book
-                                    { id = ""
-                                    , name = ""
-                                    , author = ""
+                                    { name = ""
+                                    , authors = []
+                                    , publisher = ""
                                     , year = 0
                                     , language = ""
-                                    , country = ""
-                                    , category = ""
+                                    , categories = []
                                     }
 
                             "Game" ->
                                 Game
-                                    { id = ""
-                                    , name = ""
+                                    { name = ""
                                     , year = 0
-                                    , company = ""
+                                    , companies = []
                                     , platform = ""
-                                    , country = ""
-                                    , genre = ""
+                                    , genres = []
                                     }
 
                             _ ->
                                 Video
-                                    { id = ""
-                                    , name = ""
+                                    { name = ""
                                     , originalTitle = ""
                                     , year = 0
-                                    , language = ""
-                                    , country = ""
-                                    , genre = ""
+                                    , languages = []
+                                    , countries = []
+                                    , genres = []
                                     }
                         )
               }
             , Cmd.none
             )
+
+        GotEntryData result ->
+            case result of
+                Err _ ->
+                    ( model, Cmd.none )
+
+                Ok entryData ->
+                    ( { model | selectedEntryData = Just entryData }, Cmd.none )
 
 
 
@@ -265,3 +264,121 @@ entryToLabel selectedEntry entry =
             ]
             [ text entry.name ]
         ]
+
+
+
+-- Http
+
+
+getSelectedEntryData : Entry -> Cmd Msg
+getSelectedEntryData entry =
+    Http.get
+        { url = baseUrl ++ "/get-entry?" ++ entry.id
+        , expect =
+            Http.expectJson GotEntryData
+                (case entry.category of
+                    "Audio" ->
+                        audioDecoder
+
+                    "Book" ->
+                        bookDecoder
+
+                    "Game" ->
+                        gameDecoder
+
+                    _ ->
+                        videoDecoder
+                )
+        }
+
+
+
+-- Json
+
+
+initAudio : String -> List String -> Int -> List String -> String -> EntryData
+initAudio name artists year languages genre =
+    Audio
+        { name = name
+        , artists = artists
+        , year = year
+        , languages = languages
+        , genre = genre
+        }
+
+
+audioDecoder : JD.Decoder EntryData
+audioDecoder =
+    JD.map5 initAudio
+        (JD.field "name" JD.string)
+        (JD.field "artists" (JD.list JD.string))
+        (JD.field "year" JD.int)
+        (JD.field "languages" (JD.list JD.string))
+        (JD.field "genre" JD.string)
+
+
+initBook : String -> List String -> String -> Int -> String -> List String -> EntryData
+initBook name authors publisher year language categories =
+    Book
+        { name = name
+        , authors = authors
+        , publisher = publisher
+        , year = year
+        , language = language
+        , categories = categories
+        }
+
+
+bookDecoder : JD.Decoder EntryData
+bookDecoder =
+    JD.map6 initBook
+        (JD.field "name" JD.string)
+        (JD.field "authors" (JD.list JD.string))
+        (JD.field "publisher" JD.string)
+        (JD.field "year" JD.int)
+        (JD.field "language" JD.string)
+        (JD.field "categories" (JD.list JD.string))
+
+
+initGame : String -> Int -> List String -> String -> List String -> EntryData
+initGame name year companies platform genres =
+    Game
+        { name = name
+        , year = year
+        , companies = companies
+        , platform = platform
+        , genres = genres
+        }
+
+
+gameDecoder : JD.Decoder EntryData
+gameDecoder =
+    JD.map5 initGame
+        (JD.field "name" JD.string)
+        (JD.field "year" JD.int)
+        (JD.field "companies" (JD.list JD.string))
+        (JD.field "platform" JD.string)
+        (JD.field "genres" (JD.list JD.string))
+
+
+initVideo : String -> String -> Int -> List String -> List String -> List String -> EntryData
+initVideo name originalTitle year languages countries genres =
+    Video
+        { name = name
+        , originalTitle = originalTitle
+        , year = year
+        , languages = languages
+        , countries = countries
+        , genres = genres
+        }
+
+
+videoDecoder : JD.Decoder EntryData
+videoDecoder =
+    JD.map6 initVideo
+        (JD.field "name" JD.string)
+        (JD.field "original-title" JD.string)
+        (JD.field "year" JD.int)
+        (JD.field "languages" (JD.list JD.string))
+        (JD.field "countries" (JD.list JD.string))
+        (JD.field "genres" (JD.list JD.string))
