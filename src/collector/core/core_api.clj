@@ -44,19 +44,36 @@
    :post [(s/valid? :collector.core.specs/database %)]}
   (create-initial-database date filename))
 
-(defn get-video
-  "Returns the video from tha database if it exists, otherwise nil."
+(defn get-entry
+  "Returns the entry from tha database if it exists, otherwise nil."
   {:test (fn []
-           (is (= (get-video (-> (create-initial-database)
+           (is (= (get-entry (-> (create-initial-database)
                                  (update-in [:categories :videos] #(assoc % "tt0000000" {:name "test"})))
                              "tt0000000")
                   {:name "test"}))
-           (is (nil? (get-video (create-initial-database) "tt000000"))))}
+           (is (= (get-entry (-> (create-initial-database)
+                                 (update-in [:categories :videos] #(assoc % "tt0000000" {:name "test1"}))
+                                 (update-in [:categories :audios] #(assoc % "au0000000" {:name "test2"})))
+                             "au0000000")
+                  {:name "test2"}))
+           (is (= (get-entry (-> (create-initial-database)
+                                 (update-in [:categories :videos] #(assoc % "tt0000000" {:name "test1"}))
+                                 (update-in [:categories :videos] #(assoc % "vd0000000" {:name "test2"})))
+                             "vd0000000")
+                  {:name "test2"}))
+           (is (nil? (get-entry (create-initial-database) "tt000000"))))}
   [database id]
   {:pre  [(s/valid? :collector.core.specs/database database)
-          (s/valid? :video/id id)]
-   :past [(or (s/valid? :collector.core.specs/video %) (nil? %))]}
-  (get-in database [:categories :videos id]))
+          (s/valid? :collector/id id)]
+   :past [(or (s/valid? :collector/entry %) (nil? %))]}
+  (cond (re-find #"^au" id)
+        (get-in database [:categories :audios id])
+        (re-find #"^bk" id)
+        (get-in database [:categories :books id])
+        (re-find #"^gm" id)
+        (get-in database [:categories :games id])
+        (or (re-find #"^tt" id) (re-find #"^vd" id))
+        (get-in database [:categories :videos id])))
 
 (defn add-video
   "Adds a new video to the state"
@@ -79,7 +96,7 @@
            (s/valid? :collector.core.specs/name name)]
     :post [(s/valid? :collector.core.specs/database %)]}
    (let [video (apply create-video name kvs)]
-     (if (get-video database id)
+     (if (get-entry database id)
        (error "A video with the same ID exists! ID:" id)
        (update-in database [:categories :videos] #(assoc % id video))))))
 
@@ -90,7 +107,7 @@
            (is (= (-> (create-initial-database)
                       (update-in [:categories :videos] #(assoc % "tt0000000" {:name "original"}))
                       (update-video "tt0000000" :name "updated" :original-title "updated")
-                      (get-video "tt0000000"))
+                      (get-entry "tt0000000"))
                   {:name "updated" :original-title "updated"}))
            (is (error? #"The video you are trying to update does not exist in the database! Video ID:"
                        #(-> (create-initial-database)
@@ -99,7 +116,7 @@
   {:pre  [(s/valid? :collector.core.specs/database database)
           (s/valid? :video/id id)]
    :post [(s/valid? :collector.core.specs/database %)]}
-  (if-not (get-video database id)
+  (if-not (get-entry database id)
     (error "The video you are trying to update does not exist in the database! Video ID:" id)
     (update-in database [:categories :videos id] #(apply assoc % kvs))))
 
@@ -119,6 +136,6 @@
   {:pre  [(s/valid? :collector.core.specs/database database)
           (s/valid? :video/id id)]
    :post [(s/valid? :collector.core.specs/database %)]}
-  (if (get-video database id)
+  (if (get-entry database id)
     (update-in database [:categories :videos] #(dissoc % id))
     (error "The selected video does not exist! Video ID:" id)))

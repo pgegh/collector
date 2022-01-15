@@ -67,9 +67,6 @@
    :categories        (into [] (keys (:categories database)))})
 
 
-(defn video->client-video
-  [video]
-  video)
 
 (defn filenames->client-filenames
   [filenames]

@@ -67,7 +67,7 @@
                   #inst"2021-12-26T22:07:05.047-00:00"))
            (spit "clojure__test.db" "#inst \"2021-12-27T22:07:05.047-00:00\" add-video % \"tt0000000\" \"test\"\n" :append true)
            (is (= (-> (load-database-file "clojure__test.db")
-                      (get-video "tt0000000"))
+                      (get-entry "tt0000000"))
                   {:name "test"}))
            (io/delete-file "clojure__test.db"))}
   [database-file-name]

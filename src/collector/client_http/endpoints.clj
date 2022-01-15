@@ -20,7 +20,7 @@
   (:require [clojure.data.json :refer [read-str]]
             [collector.client-http.edn-api :refer [load-database!
                                                    add-video!
-                                                   get-video!
+                                                   get-entry!
                                                    remove-video!
                                                    update-video!
                                                    get-available-database-files!]]))
@@ -49,14 +49,17 @@
   (if (= (:request-method request) :options)
     (allow-origin-response)
     (let [uri (:uri request)
+          ; when query exists
+          query (:query-string request)
           ; when body contains params we will extract them
           params (when-let [body-as-stream (:body request)]
                    (-> body-as-stream
                        (slurp)
                        (read-str :key-fn keyword
                                  :value-fn (fn [_ value] (str value)))))]
-      (println uri)
-      (println params)
+      (println "Query:" query)
+      (println "Uri:" uri)
+      (println "Params:" params)
       (cond (= uri "/load-database")
             (create-response (load-database! (:database-file-name params)))
 
@@ -74,8 +77,8 @@
                   title (:title params)]
               (create-response (update-video! id title)))
 
-            (= uri "/get-video")
-            (create-response (get-video! (:id params)))
+            (= uri "/get-entry")
+            (create-response (get-entry! query))
 
             (= uri "/get-available-database-files")
             (create-response (get-available-database-files!))

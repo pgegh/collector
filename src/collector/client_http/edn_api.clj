@@ -20,9 +20,8 @@
   (:require [clojure.spec.alpha :as s]
             [clojure.data.json :refer [write-str]]
             [collector.client-http.mappers :refer [db->client-db
-                                                   video->client-video
                                                    filenames->client-filenames]]
-            [collector.core.core-api :refer [get-video]]
+            [collector.core.core-api :refer [get-entry]]
             [collector.persistence.persistence-api :refer [handle-event
                                                            get-available-database-files]]))
 
@@ -54,9 +53,9 @@
   (time (write-str (db->client-db (swap! database-atom #(handle-event % @database-file-name-atom {:type :update-video
                                                                                                   :args [id :name name]}))))))
 
-(defn get-video!
+(defn get-entry!
   [id]
-  (time (write-str (video->client-video (get-video @database-atom id)))))
+  (time (write-str (get-entry @database-atom id))))
 
 (defn get-available-database-files!
   []
