@@ -110,7 +110,6 @@
                                 ::genre
                                 ::album
                                 ::franchise
-                                ::country
                                 ::languages
                                 ::rating]))
 (s/def :book/category string?)
@@ -143,8 +142,6 @@
                                ::directors
                                ::genres
                                ::companies
-                               ::countries
-                               ::language
                                ::rating]))
 
 (s/def ::video (s/keys :req-un [::name]
