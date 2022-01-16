@@ -16,40 +16,39 @@
 -- along with json.  If not, see <https://www.gnu.org/licenses/>.
 
 
-module FileNames exposing (FileNames, decoder, encoder, getAll, init)
+module DataStructures.FileName exposing (FileName, decoder, encoder, getString, init)
 
-import FileName exposing (FileName)
 import Json.Decode as JD
 import Json.Encode as JE
 
 
-type FileNames
-    = FileNames (List FileName)
+type FileName
+    = FileName String
 
 
-init : FileNames
+init : FileName
 init =
-    FileNames []
+    FileName ""
 
 
 
 -- Getters
 
 
-getAll : FileNames -> List FileName
-getAll (FileNames fileNames) =
-    fileNames
+getString : FileName -> String
+getString (FileName str) =
+    str
 
 
 
 -- Json
 
 
-decoder : JD.Decoder FileNames
+decoder : JD.Decoder FileName
 decoder =
-    JD.map FileNames (JD.list FileName.decoder)
+    JD.map FileName JD.string
 
 
-encoder : FileNames -> JE.Value
-encoder (FileNames listOfFilenames) =
-    JE.list FileName.encoder listOfFilenames
+encoder : FileName -> JE.Value
+encoder (FileName str) =
+    JE.string str

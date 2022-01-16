@@ -1,8 +1,8 @@
 module Page.Home exposing (Model, Msg, init, isChangeDB, update, view)
 
-import DB exposing (DB)
-import Entry exposing (Entry)
-import FileName
+import DataStructures.DB exposing (DB)
+import DataStructures.Entry exposing (Entry)
+import DataStructures.FileName as FileName
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)

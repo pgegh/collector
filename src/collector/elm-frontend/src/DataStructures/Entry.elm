@@ -1,12 +1,14 @@
-module Entry exposing (Entry, decoder)
+module DataStructures.Entry exposing (Entry, decoder)
 
 import Json.Decode as JD
+
 
 type alias Entry =
     { category : String
     , id : String
     , name : String
     }
+
 
 decoder : JD.Decoder Entry
 decoder =

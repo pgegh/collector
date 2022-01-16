@@ -18,9 +18,9 @@
 
 module Page.Start exposing (Model, Msg, getLoadedDB, init, isDBLoaded, update, view)
 
-import DB exposing (DB)
-import FileName exposing (FileName)
-import FileNames exposing (FileNames)
+import DataStructures.DB as DB exposing (DB)
+import DataStructures.FileName as FileName exposing (FileName)
+import DataStructures.FileNames as FileNames exposing (FileNames)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)

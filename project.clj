@@ -7,4 +7,5 @@
                  [org.clojure/data.json "2.4.0"]
                  [http-kit "2.5.3"]]
   :repl-options {:init-ns collector.core.core}
+  :plugins [[lein-cloverage "1.2.2"]]
   :main collector.client-http.server/start-server!)

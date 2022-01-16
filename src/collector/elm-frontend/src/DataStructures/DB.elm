@@ -1,7 +1,7 @@
-module DB exposing (DB, decoder, init)
+module DataStructures.DB exposing (DB, decoder, init)
 
-import Entry exposing (Entry)
-import FileName exposing (FileName)
+import DataStructures.Entry as Entry exposing (Entry)
+import DataStructures.FileName as FileName exposing (FileName)
 import Json.Decode as JD
 
 
