@@ -2,6 +2,7 @@ module Page.Home exposing (Model, Msg, init, isChangeDB, update, view)
 
 import DataStructures.DB exposing (DB)
 import DataStructures.Entry exposing (Entry)
+import DataStructures.EntryData as EntryData exposing (EntryData)
 import DataStructures.FileName as FileName
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -24,39 +25,6 @@ type alias Model =
     , state : HomeState
     , newEntryData : Maybe EntryData
     }
-
-
-type EntryData
-    = Audio
-        { name : String
-        , artists : List String
-        , year : Int
-        , languages : List String
-        , genre : String
-        }
-    | Book
-        { name : String
-        , authors : List String
-        , publisher : String
-        , year : Int
-        , language : String
-        , categories : List String
-        }
-    | Game
-        { name : String
-        , year : Int
-        , companies : List String
-        , platform : String
-        , genres : List String
-        }
-    | Video
-        { name : String
-        , originalTitle : String
-        , year : Int
-        , languages : List String
-        , countries : List String
-        , genres : List String
-        }
 
 
 type HomeState
@@ -117,42 +85,16 @@ update msg model =
                     Just
                         (case category of
                             "Audio" ->
-                                Audio
-                                    { name = ""
-                                    , artists = []
-                                    , year = 0
-                                    , languages = []
-                                    , genre = ""
-                                    }
+                                EntryData.initAudio
 
                             "Book" ->
-                                Book
-                                    { name = ""
-                                    , authors = []
-                                    , publisher = ""
-                                    , year = 0
-                                    , language = ""
-                                    , categories = []
-                                    }
+                                EntryData.initBook
 
                             "Game" ->
-                                Game
-                                    { name = ""
-                                    , year = 0
-                                    , companies = []
-                                    , platform = ""
-                                    , genres = []
-                                    }
+                                EntryData.initGame
 
                             _ ->
-                                Video
-                                    { name = ""
-                                    , originalTitle = ""
-                                    , year = 0
-                                    , languages = []
-                                    , countries = []
-                                    , genres = []
-                                    }
+                                EntryData.initVideo
                         )
               }
             , Cmd.none
@@ -278,107 +220,15 @@ getSelectedEntryData entry =
             Http.expectJson GotEntryData
                 (case entry.category of
                     "Audio" ->
-                        audioDecoder
+                        EntryData.audioDecoder
 
                     "Book" ->
-                        bookDecoder
+                        EntryData.bookDecoder
 
                     "Game" ->
-                        gameDecoder
+                        EntryData.gameDecoder
 
                     _ ->
-                        videoDecoder
+                        EntryData.videoDecoder
                 )
         }
-
-
-
--- Json
-
-
-initAudio : String -> List String -> Int -> List String -> String -> EntryData
-initAudio name artists year languages genre =
-    Audio
-        { name = name
-        , artists = artists
-        , year = year
-        , languages = languages
-        , genre = genre
-        }
-
-
-audioDecoder : JD.Decoder EntryData
-audioDecoder =
-    JD.map5 initAudio
-        (JD.field "name" JD.string)
-        (JD.field "artists" (JD.list JD.string))
-        (JD.field "year" JD.int)
-        (JD.field "languages" (JD.list JD.string))
-        (JD.field "genre" JD.string)
-
-
-initBook : String -> List String -> String -> Int -> String -> List String -> EntryData
-initBook name authors publisher year language categories =
-    Book
-        { name = name
-        , authors = authors
-        , publisher = publisher
-        , year = year
-        , language = language
-        , categories = categories
-        }
-
-
-bookDecoder : JD.Decoder EntryData
-bookDecoder =
-    JD.map6 initBook
-        (JD.field "name" JD.string)
-        (JD.field "authors" (JD.list JD.string))
-        (JD.field "publisher" JD.string)
-        (JD.field "year" JD.int)
-        (JD.field "language" JD.string)
-        (JD.field "categories" (JD.list JD.string))
-
-
-initGame : String -> Int -> List String -> String -> List String -> EntryData
-initGame name year companies platform genres =
-    Game
-        { name = name
-        , year = year
-        , companies = companies
-        , platform = platform
-        , genres = genres
-        }
-
-
-gameDecoder : JD.Decoder EntryData
-gameDecoder =
-    JD.map5 initGame
-        (JD.field "name" JD.string)
-        (JD.field "year" JD.int)
-        (JD.field "companies" (JD.list JD.string))
-        (JD.field "platform" JD.string)
-        (JD.field "genres" (JD.list JD.string))
-
-
-initVideo : String -> String -> Int -> List String -> List String -> List String -> EntryData
-initVideo name originalTitle year languages countries genres =
-    Video
-        { name = name
-        , originalTitle = originalTitle
-        , year = year
-        , languages = languages
-        , countries = countries
-        , genres = genres
-        }
-
-
-videoDecoder : JD.Decoder EntryData
-videoDecoder =
-    JD.map6 initVideo
-        (JD.field "name" JD.string)
-        (JD.field "original-title" JD.string)
-        (JD.field "year" JD.int)
-        (JD.field "languages" (JD.list JD.string))
-        (JD.field "countries" (JD.list JD.string))
-        (JD.field "genres" (JD.list JD.string))
